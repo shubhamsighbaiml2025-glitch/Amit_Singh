@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DEFAULT_CONTENT, useSiteContent, SiteContent } from "@/hooks/use-firestore";
-import { uploadImage } from "@/lib/admin-api";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -90,7 +90,7 @@ export default function AdminContent() {
     if (!formData || !file) return;
     setUploadingField(field);
     try {
-      const url = await uploadImage(file);
+      const url = await uploadToCloudinary(file);
       const updatedContent = { ...formData, [field]: url };
       setFormData(updatedContent);
       await saveContent(updatedContent);

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useGallery } from "@/hooks/use-firestore";
-import { addGalleryImage, deleteGalleryImage, uploadImage } from "@/lib/admin-api";
+import { addGalleryImage, deleteGalleryImage } from "@/lib/admin-api";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -26,7 +27,7 @@ export default function AdminGallery() {
 
     setUploading(true);
     try {
-      const url = await uploadImage(file);
+      const url = await uploadToCloudinary(file);
       await addGalleryImage(url, caption);
 
       toast.success("Image uploaded successfully");

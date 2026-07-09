@@ -19,8 +19,15 @@ export default function Contact() {
       message: formData.get("message") as string,
     };
 
-    if (!data.name || !data.email || !data.message) {
+    const phoneDigits = data.phone.replace(/\D/g, "");
+
+    if (!data.name || !data.email || !data.message || !data.phone) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (phoneDigits.length !== 10) {
+      toast.error("Phone number must be exactly 10 digits");
       return;
     }
 
@@ -29,12 +36,12 @@ export default function Contact() {
       const response = await fetch("/api/send-enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, phone: phoneDigits }),
       });
 
       if (!response.ok) {
         const result = await response.json().catch(() => null);
-        throw new Error(result?.error || "Failed to send enquiry");
+        throw new Error(result?.error || "Enquiry saved, but email could not be sent");
       }
 
       toast.success("Thank you! We will be connecting with you as soon as possible.");
@@ -74,8 +81,18 @@ export default function Contact() {
                   <Input id="email" name="email" type="email" required className="bg-background h-12" placeholder="john@company.com" />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="phone" className="text-sm font-medium">Phone</label>
-                  <Input id="phone" name="phone" type="tel" className="bg-background h-12" placeholder="+91..." />
+                  <label htmlFor="phone" className="text-sm font-medium">Phone *</label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]{10}"
+                    maxLength={10}
+                    required
+                    className="bg-background h-12"
+                    placeholder="10 digit phone number"
+                  />
                 </div>
               </div>
 

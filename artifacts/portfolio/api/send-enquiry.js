@@ -18,10 +18,10 @@ export default async function handler(req, res) {
     }
 
     await getAdminDb().collection("enquiries").add({
-      name,
-      email,
-      phone: phone || "",
-      message,
+      name: String(name),
+      email: String(email),
+      phone: String(phone || ""),
+      message: String(message),
       submittedAt: new Date(),
     });
 
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       text: appendCredit(`Hello ${name},\n\nThank you for reaching out to Singh Automobiles Engine Engineering. We will connect with you as soon as possible.\n\nRegards,\nSingh Automobiles`),
     });
 
-    res.status(200).json({ ok: true });
+    res.status(200).json({ ok: true, emailSent: true });
   } catch (error) {
     console.error("SMTP send failed:", error);
     res.status(500).json({ error: "Failed to send email." });

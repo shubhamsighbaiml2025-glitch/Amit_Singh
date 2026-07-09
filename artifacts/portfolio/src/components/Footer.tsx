@@ -63,7 +63,7 @@ export function Footer() {
           <p>© {new Date().getFullYear()} Singh Automobiles Engine Engineering. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <a href="https://asrvtech.in" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">
-              Built by asrvtech.in
+              build by asrvtech.in
             </a>
             <Link href="/admin/login" className="hover:text-primary transition-colors">Admin Portal</Link>
           </div>
