@@ -6,6 +6,7 @@ import {
   FileText, 
   Image as ImageIcon, 
   MessageSquare, 
+  Send,
   LogOut,
   Wrench,
   Menu,
@@ -27,6 +28,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: "/admin/content", label: "Content", icon: FileText },
     { href: "/admin/gallery", label: "Gallery", icon: ImageIcon },
     { href: "/admin/enquiries", label: "Enquiries", icon: MessageSquare },
+    { href: "/admin/mail", label: "Mail", icon: Send },
   ];
 
   const SidebarContent = () => (

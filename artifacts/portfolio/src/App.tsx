@@ -4,6 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { Analytics } from '@vercel/analytics/react';
 
 // Public Pages
 import Home from '@/pages/Home';
@@ -18,6 +19,7 @@ import AdminDashboard from '@/pages/admin/Dashboard';
 import AdminContent from '@/pages/admin/Content';
 import AdminGallery from '@/pages/admin/Gallery';
 import AdminEnquiries from '@/pages/admin/Enquiries';
+import AdminMail from '@/pages/admin/Mail';
 
 import NotFound from '@/pages/not-found';
 
@@ -37,6 +39,7 @@ function Router() {
       <Route path="/admin/content" component={AdminContent} />
       <Route path="/admin/gallery" component={AdminGallery} />
       <Route path="/admin/enquiries" component={AdminEnquiries} />
+      <Route path="/admin/mail" component={AdminMail} />
       
       <Route component={NotFound} />
     </Switch>
@@ -53,6 +56,7 @@ function App() {
               <Router />
             </WouterRouter>
             <Toaster position="top-center" richColors theme="system" />
+            <Analytics />
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
