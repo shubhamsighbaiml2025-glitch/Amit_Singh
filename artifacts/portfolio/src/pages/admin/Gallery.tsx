@@ -4,6 +4,8 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { useGallery } from "@/hooks/use-firestore";
 import { addGalleryImage, deleteGalleryImage } from "@/lib/admin-api";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { db } from "@/lib/firebase";
+import { addDoc, collection, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -28,7 +30,19 @@ export default function AdminGallery() {
     setUploading(true);
     try {
       const url = await uploadToCloudinary(file);
-      await addGalleryImage(url, caption);
+      try {
+        await addGalleryImage(url, caption);
+      } catch (apiError) {
+        await addDoc(collection(db, "gallery"), {
+          url,
+          caption,
+          createdAt: serverTimestamp(),
+        }).catch((clientError) => {
+          const apiMessage = apiError instanceof Error ? apiError.message : "API gallery save failed";
+          const clientMessage = clientError instanceof Error ? clientError.message : "Browser gallery save failed";
+          throw new Error(`${apiMessage}. Browser fallback also failed: ${clientMessage}`);
+        });
+      }
 
       toast.success("Image uploaded successfully");
       setFile(null);
@@ -38,7 +52,7 @@ export default function AdminGallery() {
       refetch();
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload image");
+      toast.error(error instanceof Error ? error.message : "Failed to upload image");
     } finally {
       setUploading(false);
     }
@@ -48,12 +62,20 @@ export default function AdminGallery() {
     if (!confirm("Are you sure you want to delete this image?")) return;
     
     try {
-      await deleteGalleryImage(id);
+      try {
+        await deleteGalleryImage(id);
+      } catch (apiError) {
+        await deleteDoc(doc(db, "gallery", id)).catch((clientError) => {
+          const apiMessage = apiError instanceof Error ? apiError.message : "API delete failed";
+          const clientMessage = clientError instanceof Error ? clientError.message : "Browser delete failed";
+          throw new Error(`${apiMessage}. Browser fallback also failed: ${clientMessage}`);
+        });
+      }
       toast.success("Image deleted");
       refetch();
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to delete image");
+      toast.error(error instanceof Error ? error.message : "Failed to delete image");
     }
   };
 

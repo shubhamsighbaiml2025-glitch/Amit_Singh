@@ -3,6 +3,8 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DEFAULT_CONTENT, useSiteContent, SiteContent } from "@/hooks/use-firestore";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { db } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,15 +37,23 @@ export default function AdminContent() {
   });
 
   const saveContent = async (contentToSave: SiteContent) => {
+    const saveableContent = getSaveableContent(contentToSave);
     const response = await fetch("/api/save-content", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: getSaveableContent(contentToSave) }),
+      body: JSON.stringify({ content: saveableContent }),
     });
 
     const data = await response.json().catch(() => null);
     if (!response.ok) {
-      throw new Error(data?.error || "Failed to save content");
+      try {
+        await setDoc(doc(db, "content", "site"), saveableContent, { merge: true });
+        return;
+      } catch (clientError) {
+        const apiMessage = data?.error || "API save failed";
+        const clientMessage = clientError instanceof Error ? clientError.message : "Browser save failed";
+        throw new Error(`${apiMessage}. Browser fallback also failed: ${clientMessage}`);
+      }
     }
   };
 

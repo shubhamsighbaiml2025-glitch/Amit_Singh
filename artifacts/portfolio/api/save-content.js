@@ -28,6 +28,6 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true, content });
   } catch (error) {
     console.error("Content save failed:", error);
-    res.status(500).json({ error: "Failed to save content." });
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to save content." });
   }
 }
