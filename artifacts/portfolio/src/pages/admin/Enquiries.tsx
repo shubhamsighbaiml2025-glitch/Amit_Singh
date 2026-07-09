@@ -41,8 +41,8 @@ export default function AdminEnquiries() {
   return (
     <AuthGuard>
       <AdminLayout>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Enquiries</h1>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Enquiries</h1>
           <p className="text-muted-foreground">
             Messages submitted through your website's contact form.
           </p>
@@ -57,25 +57,25 @@ export default function AdminEnquiries() {
             <p className="text-muted-foreground">No enquiries received yet.</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {enquiries.map((enq) => (
               <div
                 key={enq.id}
                 className="bg-card border border-border rounded-sm overflow-hidden flex flex-col"
               >
                 {/* Header info */}
-                <div className="bg-muted/50 p-4 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+                <div className="bg-muted/50 p-4 border-b border-border flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="flex min-w-0 flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:gap-8">
                     <div className="flex items-center gap-2">
                       <User size={16} className="text-primary" />
-                      <span className="font-bold">{enq.name}</span>
+                      <span className="font-bold break-words">{enq.name}</span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
                       <Mail size={14} />
                       <a
                         href={`mailto:${enq.email}`}
-                        className="hover:text-foreground transition-colors"
+                        className="break-all hover:text-foreground transition-colors"
                       >
                         {enq.email}
                       </a>
@@ -94,7 +94,7 @@ export default function AdminEnquiries() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center justify-between gap-3 shrink-0">
                     <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-background px-2 py-1 rounded border border-border w-fit">
                       <Calendar size={12} />
                       {formatSubmittedAt(enq.submittedAt)}
@@ -103,7 +103,7 @@ export default function AdminEnquiries() {
                     <Button
                       variant="destructive"
                       size="icon"
-                      className="h-8 w-8 shrink-0"
+                      className="h-11 w-11 shrink-0"
                       disabled={deleting === enq.id}
                       onClick={() => handleDelete(enq.id)}
                       title="Delete enquiry"

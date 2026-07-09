@@ -82,16 +82,16 @@ export default function AdminGallery() {
   return (
     <AuthGuard>
       <AdminLayout>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Gallery Management</h1>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Gallery Management</h1>
           <p className="text-muted-foreground">Upload and manage photos of your work.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Upload Form */}
           <div className="lg:col-span-1">
-            <form onSubmit={handleUpload} className="bg-card border border-border p-6 rounded-sm space-y-4 sticky top-6">
-              <h2 className="text-xl font-bold border-b border-border pb-4">Add New Image</h2>
+            <form onSubmit={handleUpload} className="bg-card border border-border p-4 sm:p-6 rounded-sm space-y-4 lg:sticky lg:top-6">
+              <h2 className="text-lg sm:text-xl font-bold border-b border-border pb-4">Add New Image</h2>
               
               <div className="space-y-2">
                 <label className="text-sm font-medium">Select Image</label>
@@ -115,7 +115,7 @@ export default function AdminGallery() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={!file || uploading}>
+              <Button type="submit" className="w-full min-h-11" disabled={!file || uploading}>
                 {uploading ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
                 ) : (
@@ -147,13 +147,14 @@ export default function AdminGallery() {
                     />
                     
                     {/* Overlay controls */}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-4">
+                    <div className="absolute inset-0 bg-black/60 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex flex-col justify-between p-4">
                       <div className="flex justify-end">
                         <Button 
                           variant="destructive" 
                           size="icon"
                           onClick={() => handleDelete(img.id)}
-                          className="h-8 w-8"
+                          className="h-11 w-11"
+                          aria-label="Delete gallery image"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

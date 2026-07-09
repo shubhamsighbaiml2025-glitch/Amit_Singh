@@ -90,14 +90,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile Header & Sidebar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border bg-card z-50 flex items-center justify-between px-4">
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border bg-card/95 backdrop-blur z-50 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <div className="bg-primary text-primary-foreground p-1.5 rounded-sm">
             <Wrench size={18} />
           </div>
           <span className="font-bold font-sans">ADMIN</span>
         </div>
-        <button onClick={() => setMobileOpen(true)} className="p-2">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="grid h-11 w-11 place-items-center rounded-sm border border-border bg-background"
+          aria-label="Open admin menu"
+        >
           <Menu size={24} />
         </button>
       </div>
@@ -121,7 +125,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             >
               <button
                 onClick={() => setMobileOpen(false)}
-                className="absolute top-4 right-4 p-2 text-muted-foreground"
+                className="absolute top-4 right-4 grid h-11 w-11 place-items-center rounded-sm border border-border text-muted-foreground"
+                aria-label="Close admin menu"
               >
                 <X size={20} />
               </button>
@@ -133,7 +138,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pt-16 md:pt-0">
-        <div className="p-6 md:p-8 max-w-6xl mx-auto">{children}</div>
+        <div className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">{children}</div>
       </main>
     </div>
   );

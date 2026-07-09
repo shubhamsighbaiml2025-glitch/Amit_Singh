@@ -126,21 +126,21 @@ export default function AdminContent() {
   return (
     <AuthGuard>
       <AdminLayout>
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Site Content</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Site Content</h1>
             <p className="text-muted-foreground">Manage text and services across your website.</p>
           </div>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={saving} className="hidden sm:inline-flex">
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Save Changes
           </Button>
         </div>
 
-        <div className="space-y-8 max-w-4xl pb-16">
+        <div className="space-y-6 md:space-y-8 max-w-4xl pb-28 sm:pb-16">
           {/* Images */}
-          <div className="bg-card border border-border p-6 rounded-sm space-y-6">
-            <h2 className="text-xl font-bold border-b border-border pb-4">Website Photos</h2>
+          <div className="bg-card border border-border p-4 sm:p-6 rounded-sm space-y-6">
+            <h2 className="text-lg sm:text-xl font-bold border-b border-border pb-4">Website Photos</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-4">
                 <div>
@@ -154,8 +154,8 @@ export default function AdminContent() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <Button asChild variant="outline" className="w-full" disabled={uploadingField !== null}>
-                  <label className="cursor-pointer">
+                <Button asChild variant="outline" className="w-full min-h-11" disabled={uploadingField !== null}>
+                  <label className="cursor-pointer justify-center">
                     {uploadingField === "heroImageUrl" ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -184,8 +184,8 @@ export default function AdminContent() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <Button asChild variant="outline" className="w-full" disabled={uploadingField !== null}>
-                  <label className="cursor-pointer">
+                <Button asChild variant="outline" className="w-full min-h-11" disabled={uploadingField !== null}>
+                  <label className="cursor-pointer justify-center">
                     {uploadingField === "profileImageUrl" ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -214,8 +214,8 @@ export default function AdminContent() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <Button asChild variant="outline" className="w-full" disabled={uploadingField !== null}>
-                  <label className="cursor-pointer">
+                <Button asChild variant="outline" className="w-full min-h-11" disabled={uploadingField !== null}>
+                  <label className="cursor-pointer justify-center">
                     {uploadingField === "engineImageUrl" ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -235,8 +235,8 @@ export default function AdminContent() {
           </div>
 
           {/* Hero Section */}
-          <div className="bg-card border border-border p-6 rounded-sm space-y-6">
-            <h2 className="text-xl font-bold border-b border-border pb-4">Hero Section (Home)</h2>
+          <div className="bg-card border border-border p-4 sm:p-6 rounded-sm space-y-6">
+            <h2 className="text-lg sm:text-xl font-bold border-b border-border pb-4">Hero Section (Home)</h2>
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Hero Title</label>
@@ -258,8 +258,8 @@ export default function AdminContent() {
           </div>
 
           {/* About Section */}
-          <div className="bg-card border border-border p-6 rounded-sm space-y-6">
-            <h2 className="text-xl font-bold border-b border-border pb-4">About Section</h2>
+          <div className="bg-card border border-border p-4 sm:p-6 rounded-sm space-y-6">
+            <h2 className="text-lg sm:text-xl font-bold border-b border-border pb-4">About Section</h2>
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">About Text (Paragraphs separated by blank lines)</label>
@@ -273,17 +273,17 @@ export default function AdminContent() {
           </div>
 
           {/* Services Section */}
-          <div className="bg-card border border-border p-6 rounded-sm space-y-6">
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <h2 className="text-xl font-bold">Services List</h2>
-              <Button size="sm" variant="outline" onClick={handleAddService}>
+          <div className="bg-card border border-border p-4 sm:p-6 rounded-sm space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
+              <h2 className="text-lg sm:text-xl font-bold">Services List</h2>
+              <Button size="sm" variant="outline" onClick={handleAddService} className="min-h-11 w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" /> Add Service
               </Button>
             </div>
             
             <div className="space-y-6">
               {formData.servicesList.map((service, index) => (
-                <div key={index} className="flex gap-4 p-4 border border-border bg-background rounded-sm relative group">
+                <div key={index} className="flex flex-col gap-4 p-4 border border-border bg-background rounded-sm relative group sm:flex-row">
                   <div className="flex-1 space-y-4">
                     <Input 
                       placeholder="Service Title"
@@ -300,9 +300,10 @@ export default function AdminContent() {
                   </div>
                   <Button 
                     variant="ghost" 
-                    size="icon" 
-                    className="text-destructive hover:bg-destructive/10 shrink-0"
+                    size="icon"
+                    className="text-destructive hover:bg-destructive/10 shrink-0 h-11 w-full sm:w-11"
                     onClick={() => handleRemoveService(index)}
+                    aria-label={`Delete service ${index + 1}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -310,6 +311,12 @@ export default function AdminContent() {
               ))}
             </div>
           </div>
+        </div>
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-4 backdrop-blur sm:hidden">
+          <Button onClick={handleSave} disabled={saving} className="h-12 w-full">
+            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Save Changes
+          </Button>
         </div>
       </AdminLayout>
     </AuthGuard>
