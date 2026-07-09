@@ -1,6 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  serverTimestamp,
+  Timestamp,
+} from 'firebase/firestore';
 
 export interface SiteContent {
   heroTitle: string;
@@ -43,32 +54,33 @@ export const DEFAULT_CONTENT: SiteContent = {
   ]
 };
 
-// ── Content Hook ──────────────────────────────────────────────────────────────
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  let timeoutId: ReturnType<typeof setTimeout>;
+
+  return Promise.race([
+    promise,
+    new Promise<null>((resolve) => {
+      timeoutId = setTimeout(() => resolve(null), ms);
+    }),
+  ]).finally(() => clearTimeout(timeoutId));
+}
+
 export function useSiteContent() {
   const [data, setData] = useState<SiteContent>(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(false);
 
   const fetch = useCallback(async () => {
-    let cancelled = false;
-    const timeout = setTimeout(() => { if (!cancelled) setLoading(false); }, 5000);
-
     try {
-      const docRef = doc(db, 'content', 'site');
-      const docSnap = await getDoc(docRef);
-      if (!cancelled) {
-        if (docSnap.exists()) {
-          setData(docSnap.data() as SiteContent);
-        } else {
-          setDoc(docRef, DEFAULT_CONTENT).catch(() => {});
-        }
+      const docSnap = await withTimeout(getDoc(doc(db, 'content', 'site')), 2500);
+
+      if (docSnap?.exists()) {
+        setData({ ...DEFAULT_CONTENT, ...(docSnap.data() as Partial<SiteContent>) });
       }
     } catch {
-      // Firebase not configured yet — keep default content
+      // Firebase not configured yet - keep default content.
     } finally {
-      clearTimeout(timeout);
-      if (!cancelled) setLoading(false);
+      setLoading(false);
     }
-    return () => { cancelled = true; clearTimeout(timeout); };
   }, []);
 
   useEffect(() => { fetch(); }, [fetch]);
@@ -76,7 +88,6 @@ export function useSiteContent() {
   return { content: data, loading, refetch: fetch };
 }
 
-// ── Gallery Hook ──────────────────────────────────────────────────────────────
 export function useGallery() {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,7 +99,7 @@ export function useGallery() {
       const querySnapshot = await getDocs(q);
       setImages(querySnapshot.docs.map(d => ({ id: d.id, ...d.data() })) as GalleryImage[]);
     } catch {
-      // Firebase not configured — keep empty list
+      // Firebase not configured - keep empty list.
     } finally {
       setLoading(false);
     }
@@ -99,7 +110,6 @@ export function useGallery() {
   return { images, loading, refetch: fetch };
 }
 
-// ── Enquiries Hook ────────────────────────────────────────────────────────────
 export function useEnquiries() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,7 +121,7 @@ export function useEnquiries() {
       const querySnapshot = await getDocs(q);
       setEnquiries(querySnapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Enquiry[]);
     } catch {
-      // Firebase not configured — keep empty list
+      // Firebase not configured - keep empty list.
     } finally {
       setLoading(false);
     }
@@ -122,5 +132,4 @@ export function useEnquiries() {
   return { enquiries, loading, refetch: fetch };
 }
 
-// Re-export for convenience
 export { addDoc, collection, serverTimestamp };

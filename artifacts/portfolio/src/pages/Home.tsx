@@ -6,26 +6,13 @@ import { useSiteContent } from "@/hooks/use-firestore";
 import { motion } from "framer-motion";
 
 export default function Home() {
-  const { content, loading } = useSiteContent();
+  const { content } = useSiteContent();
 
   const heroImage = content?.heroImageUrl || "/assets/hero.jpg";
   const heroName = "Amit Singh";
   const heroTitle = "Automobile Engineer";
   const heroSubtitle =
     "Heavy machinery electrical, engine, hydraulic and earth moving machinery service.";
-
-  if (loading || !content) {
-    return (
-      <Layout>
-        <div className="min-h-[80vh] flex items-center justify-center">
-          <div className="animate-pulse flex flex-col items-center gap-4">
-            <div className="h-12 w-64 bg-muted rounded-md" />
-            <div className="h-4 w-96 bg-muted rounded-md" />
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
@@ -77,17 +64,15 @@ export default function Home() {
 
       {/* Stats/Trust Bar */}
       <section className="bg-card border-y border-border">
-        <div className="container mx-auto px-4 md:px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-border">
+        <div className="container mx-auto px-4 md:px-6 py-10 md:py-12">
+          <div className="grid grid-cols-2 max-w-5xl mx-auto divide-x divide-border">
             {[
               { label: "Years Experience", value: "10+" },
               { label: "Brands Serviced", value: "15+" },
-              { label: "Machinery Types", value: "All" },
-              { label: "Service Quality", value: "100%" }
             ].map((stat, i) => (
-              <div key={i} className="text-center px-4">
-                <div className="text-3xl md:text-4xl font-bold font-mono text-primary mb-2">{stat.value}</div>
-                <div className="text-sm text-muted-foreground uppercase tracking-widest">{stat.label}</div>
+              <div key={i} className="text-center px-4 md:px-8">
+                <div className="text-4xl md:text-5xl font-bold font-mono text-primary mb-3 leading-none">{stat.value}</div>
+                <div className="text-xs sm:text-sm md:text-base text-muted-foreground uppercase tracking-[0.2em]">{stat.label}</div>
               </div>
             ))}
           </div>
