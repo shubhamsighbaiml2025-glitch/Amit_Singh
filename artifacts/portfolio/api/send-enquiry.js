@@ -32,36 +32,41 @@ export default async function handler(req, res) {
       return;
     }
 
-    const transporter = createTransporter();
-    const submittedAt = new Date().toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-    });
+    try {
+      const transporter = createTransporter();
+      const submittedAt = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+      });
 
-    await transporter.sendMail({
-      from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
-      to: adminEmail,
-      replyTo: email,
-      subject: `New enquiry from ${name}`,
-      text: [
-        `Name: ${name}`,
-        `Email: ${email}`,
-        `Phone: ${phone || "Not provided"}`,
-        `Submitted: ${submittedAt}`,
-        "",
-        appendCredit(message),
-      ].join("\n"),
-    });
+      await transporter.sendMail({
+        from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
+        to: adminEmail,
+        replyTo: email,
+        subject: `New enquiry from ${name}`,
+        text: [
+          `Name: ${name}`,
+          `Email: ${email}`,
+          `Phone: ${phone || "Not provided"}`,
+          `Submitted: ${submittedAt}`,
+          "",
+          appendCredit(message),
+        ].join("\n"),
+      });
 
-    await transporter.sendMail({
-      from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
-      to: email,
-      subject: "We received your enquiry",
-      text: appendCredit(`Hello ${name},\n\nThank you for reaching out to Singh Automobiles Engine Engineering. We will connect with you as soon as possible.\n\nRegards,\nSingh Automobiles`),
-    });
+      await transporter.sendMail({
+        from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
+        to: email,
+        subject: "We received your enquiry",
+        text: appendCredit(`Hello ${name},\n\nThank you for reaching out to Singh Automobiles Engine Engineering. We will connect with you as soon as possible.\n\nRegards,\nSingh Automobiles`),
+      });
 
-    res.status(200).json({ ok: true, emailSent: true });
+      res.status(200).json({ ok: true, emailSent: true });
+    } catch (emailError) {
+      console.error("Enquiry saved, SMTP send failed:", emailError);
+      res.status(200).json({ ok: true, emailSent: false });
+    }
   } catch (error) {
-    console.error("SMTP send failed:", error);
-    res.status(500).json({ error: "Failed to send email." });
+    console.error("Enquiry save failed:", error);
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to save enquiry." });
   }
 }

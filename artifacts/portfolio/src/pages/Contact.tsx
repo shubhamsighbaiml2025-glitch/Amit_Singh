@@ -44,7 +44,7 @@ export default function Contact() {
         throw new Error(result?.error || "Enquiry saved, but email could not be sent");
       }
 
-      toast.success("Thank you! We will be connecting with you as soon as possible.");
+      toast.success("Thank you! Your enquiry has been submitted.");
       (e.target as HTMLFormElement).reset();
     } catch (error) {
       console.error("Error submitting enquiry:", error);
