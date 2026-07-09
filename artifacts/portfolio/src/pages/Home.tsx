@@ -42,20 +42,11 @@ export default function Home() {
         </div>
 
         <div className="container relative z-20 mx-auto px-4 md:px-6">
-          <div className="hidden lg:block absolute right-6 top-1/2 -translate-y-1/2 w-[30vw] max-w-sm">
-            <div className="aspect-[3/4] overflow-hidden rounded-sm border border-border bg-card shadow-2xl">
-              <img
-                src={content.profileImageUrl || "/assets/amit-singh.jpg"}
-                alt="Amit Singh"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="max-w-3xl lg:max-w-2xl"
+            className="max-w-3xl"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 mb-6 font-mono text-sm uppercase tracking-wider">
               <Zap size={14} className="fill-primary" />
