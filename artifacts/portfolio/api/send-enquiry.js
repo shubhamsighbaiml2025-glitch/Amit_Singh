@@ -2,17 +2,33 @@ import {
   adminEmail,
   allowOnlyPost,
   appendCredit,
-  assertSmtpConfigured,
   createTransporter,
+  getMissingSmtpFields,
 } from "./_mail.js";
+import { getAdminDb } from "./_firebase-admin.js";
 
 export default async function handler(req, res) {
-  if (!allowOnlyPost(req, res) || !assertSmtpConfigured(res)) return;
+  if (!allowOnlyPost(req, res)) return;
 
   try {
     const { name, email, phone, message } = req.body || {};
     if (!name || !email || !message) {
       res.status(400).json({ error: "Name, email, and message are required." });
+      return;
+    }
+
+    await getAdminDb().collection("enquiries").add({
+      name,
+      email,
+      phone: phone || "",
+      message,
+      submittedAt: new Date(),
+    });
+
+    const missingSmtpFields = getMissingSmtpFields();
+    if (missingSmtpFields.length > 0) {
+      console.warn(`Enquiry saved, email skipped. Missing SMTP config: ${missingSmtpFields.join(", ")}`);
+      res.status(200).json({ ok: true, emailSent: false });
       return;
     }
 

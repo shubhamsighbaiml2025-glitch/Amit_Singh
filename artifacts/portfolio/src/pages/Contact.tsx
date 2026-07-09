@@ -2,8 +2,6 @@ import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { db } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Phone, Mail, MapPin, Loader2 } from "lucide-react";
@@ -28,24 +26,22 @@ export default function Contact() {
 
     setLoading(true);
     try {
-      // 1. Save to Firestore first — enquiry is never lost even if email fails
-      await addDoc(collection(db, "enquiries"), {
-        ...data,
-        submittedAt: serverTimestamp(),
-      }).catch((err) => console.warn("Firestore save failed:", err));
-
-      // 2. Send emails via EmailJS (best-effort — don't fail UX on email error)
-      fetch("/api/send-enquiry", {
+      const response = await fetch("/api/send-enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-      }).catch((err) => console.warn("SMTP email send failed:", err));
+      });
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+        throw new Error(result?.error || "Failed to send enquiry");
+      }
 
       toast.success("Thank you! We will be connecting with you as soon as possible.");
       (e.target as HTMLFormElement).reset();
     } catch (error) {
       console.error("Error submitting enquiry:", error);
-      toast.error("Failed to send message. Please try again or call us directly.");
+      toast.error(error instanceof Error ? error.message : "Failed to send message. Please try again or call us directly.");
     } finally {
       setLoading(false);
     }
@@ -64,7 +60,6 @@ export default function Contact() {
 
       <div className="container mx-auto px-4 md:px-6 py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          
           <div>
             <h2 className="text-2xl font-bold mb-8">Send an Enquiry</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -72,7 +67,7 @@ export default function Contact() {
                 <label htmlFor="name" className="text-sm font-medium">Full Name *</label>
                 <Input id="name" name="name" required className="bg-background h-12" placeholder="John Doe" />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-medium">Email *</label>
@@ -83,14 +78,14 @@ export default function Contact() {
                   <Input id="phone" name="phone" type="tel" className="bg-background h-12" placeholder="+91..." />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <label htmlFor="message" className="text-sm font-medium">Message *</label>
-                <Textarea 
-                  id="message" 
-                  name="message" 
-                  required 
-                  className="bg-background min-h-[150px] resize-y" 
+                <Textarea
+                  id="message"
+                  name="message"
+                  required
+                  className="bg-background min-h-[150px] resize-y"
                   placeholder="Describe your machinery issue or service requirement..."
                 />
               </div>
@@ -108,7 +103,7 @@ export default function Contact() {
           <div className="lg:pl-12">
             <div className="bg-muted/50 border border-border p-8 rounded-sm">
               <h2 className="text-2xl font-bold mb-8">Direct Contact</h2>
-              
+
               <div className="space-y-8">
                 <div className="flex items-start gap-4">
                   <div className="bg-primary/20 p-3 rounded-full shrink-0">
@@ -143,7 +138,6 @@ export default function Contact() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </Layout>

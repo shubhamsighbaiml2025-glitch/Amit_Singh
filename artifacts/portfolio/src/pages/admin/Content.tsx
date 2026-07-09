@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DEFAULT_CONTENT, useSiteContent, SiteContent } from "@/hooks/use-firestore";
-import { db } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
-import { uploadToCloudinary } from "@/lib/cloudinary";
+import { uploadImage } from "@/lib/admin-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,15 +21,41 @@ export default function AdminContent() {
     }
   }, [content]);
 
+  const getSaveableContent = (contentToSave: SiteContent): SiteContent => ({
+    heroTitle: contentToSave.heroTitle || DEFAULT_CONTENT.heroTitle,
+    heroSubtitle: contentToSave.heroSubtitle || DEFAULT_CONTENT.heroSubtitle,
+    heroImageUrl: contentToSave.heroImageUrl || DEFAULT_CONTENT.heroImageUrl,
+    engineImageUrl: contentToSave.engineImageUrl || DEFAULT_CONTENT.engineImageUrl,
+    profileImageUrl: contentToSave.profileImageUrl || DEFAULT_CONTENT.profileImageUrl,
+    aboutText: contentToSave.aboutText || DEFAULT_CONTENT.aboutText,
+    servicesList: (contentToSave.servicesList || DEFAULT_CONTENT.servicesList).map((service) => ({
+      title: service.title || "",
+      description: service.description || "",
+    })),
+  });
+
+  const saveContent = async (contentToSave: SiteContent) => {
+    const response = await fetch("/api/save-content", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: getSaveableContent(contentToSave) }),
+    });
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(data?.error || "Failed to save content");
+    }
+  };
+
   const handleSave = async () => {
     if (!formData) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, "content", "site"), formData);
+      await saveContent(formData);
       toast.success("Content saved successfully");
     } catch (error) {
       console.error("Error saving content:", error);
-      toast.error("Failed to save content");
+      toast.error(error instanceof Error ? error.message : "Failed to save content");
     } finally {
       setSaving(false);
     }
@@ -66,14 +90,14 @@ export default function AdminContent() {
     if (!formData || !file) return;
     setUploadingField(field);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadImage(file);
       const updatedContent = { ...formData, [field]: url };
       setFormData(updatedContent);
-      await setDoc(doc(db, "content", "site"), updatedContent);
+      await saveContent(updatedContent);
       toast.success("Image uploaded and saved");
     } catch (error) {
       console.error("Image upload failed:", error);
-      toast.error("Failed to upload image");
+      toast.error(error instanceof Error ? error.message : "Failed to upload image");
     } finally {
       setUploadingField(null);
     }

@@ -2,9 +2,7 @@ import { useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useGallery } from "@/hooks/use-firestore";
-import { uploadToCloudinary } from "@/lib/cloudinary";
-import { db } from "@/lib/firebase";
-import { addDoc, collection, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
+import { addGalleryImage, deleteGalleryImage, uploadImage } from "@/lib/admin-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -28,15 +26,8 @@ export default function AdminGallery() {
 
     setUploading(true);
     try {
-      // 1. Upload to Cloudinary
-      const url = await uploadToCloudinary(file);
-
-      // 2. Save to Firestore
-      await addDoc(collection(db, "gallery"), {
-        url,
-        caption,
-        createdAt: serverTimestamp(),
-      });
+      const url = await uploadImage(file);
+      await addGalleryImage(url, caption);
 
       toast.success("Image uploaded successfully");
       setFile(null);
@@ -56,9 +47,9 @@ export default function AdminGallery() {
     if (!confirm("Are you sure you want to delete this image?")) return;
     
     try {
-      await deleteDoc(doc(db, "gallery", id));
+      await deleteGalleryImage(id);
       toast.success("Image deleted");
-      // Note: we don't delete from Cloudinary in this simple implementation
+      refetch();
     } catch (error) {
       console.error("Delete error:", error);
       toast.error("Failed to delete image");

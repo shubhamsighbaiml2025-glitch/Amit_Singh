@@ -13,6 +13,16 @@ export default function AdminEnquiries() {
   const { enquiries, loading, refetch } = useEnquiries();
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  const formatSubmittedAt = (submittedAt: any) => {
+    if (!submittedAt) return "Unknown date";
+    const date =
+      typeof submittedAt.toDate === "function"
+        ? submittedAt.toDate()
+        : new Date(submittedAt);
+
+    return Number.isNaN(date.getTime()) ? "Unknown date" : format(date, "MMM dd, yyyy HH:mm");
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this enquiry? This cannot be undone.")) return;
     setDeleting(id);
@@ -87,9 +97,7 @@ export default function AdminEnquiries() {
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-background px-2 py-1 rounded border border-border w-fit">
                       <Calendar size={12} />
-                      {enq.submittedAt?.toDate()
-                        ? format(enq.submittedAt.toDate(), "MMM dd, yyyy HH:mm")
-                        : "Unknown date"}
+                      {formatSubmittedAt(enq.submittedAt)}
                     </div>
 
                     <Button
