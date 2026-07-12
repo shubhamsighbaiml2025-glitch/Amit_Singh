@@ -39,6 +39,15 @@ export interface Enquiry {
   submittedAt: Timestamp;
 }
 
+export interface Review {
+  id: string;
+  name: string;
+  rating: number;
+  description: string;
+  createdAt: Timestamp;
+  updatedAt?: Timestamp;
+}
+
 export const DEFAULT_CONTENT: SiteContent = {
   heroTitle: "Precision Engineering. Unyielding Power.",
   heroSubtitle: "Expert service and repair for heavy earth-moving machinery, diesel engines, and complex electrical systems. We keep your fleet moving.",
@@ -130,6 +139,28 @@ export function useEnquiries() {
   useEffect(() => { fetch(); }, [fetch]);
 
   return { enquiries, loading, refetch: fetch };
+}
+
+export function useReviews() {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      setReviews(querySnapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Review[]);
+    } catch {
+      // Firebase not configured - keep empty list.
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return { reviews, loading, refetch: fetch };
 }
 
 export { addDoc, collection, serverTimestamp };
