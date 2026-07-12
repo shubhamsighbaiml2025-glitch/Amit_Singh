@@ -56,6 +56,7 @@ function RatingStars({
 export default function Reviews() {
   const { reviews, loading, refetch } = useReviews();
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
   const [rating, setRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
@@ -63,22 +64,50 @@ export default function Reviews() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !description.trim()) {
-      toast.error("Please enter your name and review description");
+    if (!name.trim() || !email.trim() || !description.trim()) {
+      toast.error("Please enter your name, email, and review description");
       return;
     }
 
     setSubmitting(true);
     try {
-      await addDoc(collection(db, "reviews"), {
+      const reviewData = {
         name: name.trim(),
+        email: email.trim(),
         rating,
         description: description.trim(),
-        createdAt: serverTimestamp(),
-      });
+      };
 
-      toast.success("Thank you for your review");
+      let emailSent = false;
+
+      try {
+        const response = await fetch("/api/send-review", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reviewData),
+        });
+
+        const result = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(result?.error || "Review API failed");
+        }
+
+        emailSent = Boolean(result?.emailSent);
+      } catch (apiError) {
+        console.error("Review API error:", apiError);
+        await addDoc(collection(db, "reviews"), {
+          ...reviewData,
+          createdAt: serverTimestamp(),
+        });
+      }
+
+      toast.success(
+        emailSent
+          ? "Thank you for your review. A confirmation email has been sent."
+          : "Thank you for your review. Email confirmation could not be sent right now.",
+      );
       setName("");
+      setEmail("");
       setDescription("");
       setRating(5);
       refetch();
@@ -113,6 +142,19 @@ export default function Reviews() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
+                required
+                className="bg-background h-12"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="review-email" className="text-sm font-medium">Email *</label>
+              <Input
+                id="review-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
                 required
                 className="bg-background h-12"
               />

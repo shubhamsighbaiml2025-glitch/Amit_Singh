@@ -42,6 +42,7 @@ export interface Enquiry {
 export interface Review {
   id: string;
   name: string;
+  email?: string;
   rating: number;
   description: string;
   createdAt: Timestamp;

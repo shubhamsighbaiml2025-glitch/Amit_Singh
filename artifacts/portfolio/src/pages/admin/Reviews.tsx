@@ -9,7 +9,7 @@ import { db } from "@/lib/firebase";
 import { deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Edit3, Loader2, MessageSquare, Save, Star, Trash2, X } from "lucide-react";
+import { Edit3, Loader2, Mail, MessageSquare, Save, Star, Trash2, X } from "lucide-react";
 
 function formatReviewDate(value: any) {
   if (!value) return "Unknown date";
@@ -59,12 +59,13 @@ export default function AdminReviews() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [draft, setDraft] = useState({ name: "", rating: 5, description: "" });
+  const [draft, setDraft] = useState({ name: "", email: "", rating: 5, description: "" });
 
   const beginEdit = (review: Review) => {
     setEditingId(review.id);
     setDraft({
       name: review.name,
+      email: review.email || "",
       rating: review.rating,
       description: review.description,
     });
@@ -80,6 +81,7 @@ export default function AdminReviews() {
     try {
       await updateDoc(doc(db, "reviews", id), {
         name: draft.name.trim(),
+        email: draft.email.trim(),
         rating: draft.rating,
         description: draft.description.trim(),
         updatedAt: serverTimestamp(),
@@ -142,14 +144,34 @@ export default function AdminReviews() {
                         {formatReviewDate(review.createdAt)}
                       </div>
                       {editing ? (
-                        <Input
-                          value={draft.name}
-                          onChange={(e) => setDraft((current) => ({ ...current, name: e.target.value }))}
-                          className="bg-background h-11"
-                          placeholder="Reviewer name"
-                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <Input
+                            value={draft.name}
+                            onChange={(e) => setDraft((current) => ({ ...current, name: e.target.value }))}
+                            className="bg-background h-11"
+                            placeholder="Reviewer name"
+                          />
+                          <Input
+                            type="email"
+                            value={draft.email}
+                            onChange={(e) => setDraft((current) => ({ ...current, email: e.target.value }))}
+                            className="bg-background h-11"
+                            placeholder="Reviewer email"
+                          />
+                        </div>
                       ) : (
-                        <h2 className="text-xl font-bold break-words">{review.name}</h2>
+                        <div>
+                          <h2 className="text-xl font-bold break-words">{review.name}</h2>
+                          {review.email && (
+                            <a
+                              href={`mailto:${review.email}`}
+                              className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors break-all"
+                            >
+                              <Mail className="h-4 w-4 shrink-0" />
+                              {review.email}
+                            </a>
+                          )}
+                        </div>
                       )}
                     </div>
 
