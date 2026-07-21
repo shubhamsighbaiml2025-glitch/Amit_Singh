@@ -46,3 +46,20 @@ export async function deleteGalleryImage(id: string) {
   return parseApiResponse<{ ok: true }>(response);
 }
 
+export async function addVideo(url: string, title: string) {
+  const response = await fetch("/api/video", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, title }),
+  });
+  return parseApiResponse<{ ok: true; id: string }>(response);
+}
+
+export async function deleteVideo(id: string) {
+  const response = await fetch("/api/video", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+  return parseApiResponse<{ ok: true }>(response);
+}

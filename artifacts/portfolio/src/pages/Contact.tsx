@@ -5,9 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Phone, Mail, MapPin, Loader2 } from "lucide-react";
+import { useSiteContent } from "@/hooks/use-firestore";
 
 export default function Contact() {
   const [loading, setLoading] = useState(false);
+  const { content } = useSiteContent();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -128,7 +130,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <div className="text-sm font-mono text-muted-foreground uppercase tracking-widest mb-1">Phone</div>
-                    <div className="text-lg font-medium">+91 9905804791</div>
+                    <div className="text-lg font-medium">{content.phone}</div>
                   </div>
                 </div>
 
@@ -138,7 +140,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <div className="text-sm font-mono text-muted-foreground uppercase tracking-widest mb-1">Email</div>
-                    <div className="text-lg font-medium break-all">amitsingh6061.innet@gmail.com</div>
+                    <div className="text-lg font-medium break-all">{content.email}</div>
                   </div>
                 </div>
 
@@ -148,7 +150,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <div className="text-sm font-mono text-muted-foreground uppercase tracking-widest mb-1">Location</div>
-                    <div className="text-lg font-medium">India</div>
+                    <div className="text-lg font-medium">{content.location}</div>
                     <p className="text-muted-foreground mt-2">Available for on-site service calls across designated regions.</p>
                   </div>
                 </div>

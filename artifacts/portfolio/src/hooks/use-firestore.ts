@@ -19,6 +19,9 @@ export interface SiteContent {
   heroImageUrl?: string;
   engineImageUrl?: string;
   profileImageUrl?: string;
+  phone: string;
+  email: string;
+  location: string;
   aboutText: string;
   servicesList: { title: string; description: string }[];
 }
@@ -27,6 +30,13 @@ export interface GalleryImage {
   id: string;
   url: string;
   caption: string;
+  createdAt: Timestamp;
+}
+
+export interface SiteVideo {
+  id: string;
+  url: string;
+  title: string;
   createdAt: Timestamp;
 }
 
@@ -55,6 +65,9 @@ export const DEFAULT_CONTENT: SiteContent = {
   heroImageUrl: "/assets/hero.jpg",
   engineImageUrl: "/assets/services.jpg",
   profileImageUrl: "/assets/amit-singh.jpg",
+  phone: "+91 9905804791",
+  email: "amitsingh6061.innet@gmail.com",
+  location: "India",
   aboutText: "With over a decade of hands-on experience in the heavy machinery sector, Amit Singh has built a reputation for uncompromising quality and technical excellence. Specializing in Volvo, CAT, Komatsu, and JCB equipment, Singh Automobiles Engine Engineering brings industrial-grade precision to every repair. We understand that downtime costs money, which is why we deliver fast, reliable, and durable solutions for alternators, wiring harnesses, hydraulic pumps, and diesel engines.",
   servicesList: [
     { title: "Heavy Machinery Electrical Systems", description: "Complete diagnostics and repair for Alternators, Self Starters, Wiring Harnesses, Controllers, Displays, ECUs, and VCUs." },
@@ -118,6 +131,28 @@ export function useGallery() {
   useEffect(() => { fetch(); }, [fetch]);
 
   return { images, loading, refetch: fetch };
+}
+
+export function useVideos() {
+  const [videos, setVideos] = useState<SiteVideo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'videos'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      setVideos(querySnapshot.docs.map(d => ({ id: d.id, ...d.data() })) as SiteVideo[]);
+    } catch {
+      // Firebase not configured - keep empty list.
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return { videos, loading, refetch: fetch };
 }
 
 export function useEnquiries() {

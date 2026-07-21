@@ -12,6 +12,7 @@ import Services from '@/pages/Services';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import Gallery from '@/pages/Gallery';
+import Videos from '@/pages/Videos';
 import Reviews from '@/pages/Reviews';
 
 // Admin Pages
@@ -19,6 +20,7 @@ import AdminLogin from '@/pages/admin/Login';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import AdminContent from '@/pages/admin/Content';
 import AdminGallery from '@/pages/admin/Gallery';
+import AdminVideos from '@/pages/admin/Videos';
 import AdminEnquiries from '@/pages/admin/Enquiries';
 import AdminMail from '@/pages/admin/Mail';
 import AdminReviews from '@/pages/admin/Reviews';
@@ -35,12 +37,14 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
       <Route path="/gallery" component={Gallery} />
+      <Route path="/videos" component={Videos} />
       <Route path="/reviews" component={Reviews} />
       
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/content" component={AdminContent} />
       <Route path="/admin/gallery" component={AdminGallery} />
+      <Route path="/admin/videos" component={AdminVideos} />
       <Route path="/admin/enquiries" component={AdminEnquiries} />
       <Route path="/admin/reviews" component={AdminReviews} />
       <Route path="/admin/mail" component={AdminMail} />

@@ -1,7 +1,10 @@
 import { Link } from "wouter";
 import { Wrench, Phone, Mail, MapPin } from "lucide-react";
+import { useSiteContent } from "@/hooks/use-firestore";
 
 export function Footer() {
+  const { content } = useSiteContent();
+
   return (
     <footer className="bg-card border-t border-border mt-auto pt-16 pb-8">
       <div className="container mx-auto px-4 md:px-6">
@@ -36,6 +39,7 @@ export function Footer() {
               <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link href="/services" className="hover:text-primary transition-colors">Our Services</Link></li>
               <li><Link href="/gallery" className="hover:text-primary transition-colors">Gallery</Link></li>
+              <li><Link href="/videos" className="hover:text-primary transition-colors">Videos</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
             </ul>
           </div>
@@ -45,15 +49,15 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-3">
                 <Phone size={16} className="text-primary shrink-0 mt-0.5" />
-                <span>+91 9905804791</span>
+                <span>{content.phone}</span>
               </li>
               <li className="flex items-start gap-3">
                 <Mail size={16} className="text-primary shrink-0 mt-0.5" />
-                <span className="break-all">amitsingh6061.innet@gmail.com</span>
+                <span className="break-all">{content.email}</span>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
-                <span>India</span>
+                <span>{content.location}</span>
               </li>
             </ul>
           </div>

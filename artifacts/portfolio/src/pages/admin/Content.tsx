@@ -29,6 +29,9 @@ export default function AdminContent() {
     heroImageUrl: contentToSave.heroImageUrl || DEFAULT_CONTENT.heroImageUrl,
     engineImageUrl: contentToSave.engineImageUrl || DEFAULT_CONTENT.engineImageUrl,
     profileImageUrl: contentToSave.profileImageUrl || DEFAULT_CONTENT.profileImageUrl,
+    phone: contentToSave.phone || DEFAULT_CONTENT.phone,
+    email: contentToSave.email || DEFAULT_CONTENT.email,
+    location: contentToSave.location || DEFAULT_CONTENT.location,
     aboutText: contentToSave.aboutText || DEFAULT_CONTENT.aboutText,
     servicesList: (contentToSave.servicesList || DEFAULT_CONTENT.servicesList).map((service) => ({
       title: service.title || "",
@@ -230,6 +233,41 @@ export default function AdminContent() {
                     />
                   </label>
                 </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Details */}
+          <div className="bg-card border border-border p-4 sm:p-6 rounded-sm space-y-6">
+            <h2 className="text-lg sm:text-xl font-bold border-b border-border pb-4">Contact Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Phone Number</label>
+                <Input
+                  value={formData.phone}
+                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                  className="bg-background"
+                  placeholder="+91 9905804791"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email</label>
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  className="bg-background"
+                  placeholder="name@example.com"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-medium">Location</label>
+                <Input
+                  value={formData.location}
+                  onChange={e => setFormData({ ...formData, location: e.target.value })}
+                  className="bg-background"
+                  placeholder="India"
+                />
               </div>
             </div>
           </div>

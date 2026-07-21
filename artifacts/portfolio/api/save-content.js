@@ -8,6 +8,9 @@ function normalizeContent(content) {
     heroImageUrl: String(content.heroImageUrl || ""),
     engineImageUrl: String(content.engineImageUrl || ""),
     profileImageUrl: String(content.profileImageUrl || ""),
+    phone: String(content.phone || ""),
+    email: String(content.email || ""),
+    location: String(content.location || ""),
     aboutText: String(content.aboutText || ""),
     servicesList: Array.isArray(content.servicesList)
       ? content.servicesList.map((service) => ({

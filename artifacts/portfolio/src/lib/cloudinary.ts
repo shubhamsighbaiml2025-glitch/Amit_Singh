@@ -13,13 +13,13 @@ export const CLOUDINARY_UPLOAD_PRESET =
  * Uploads a file to Cloudinary via the unsigned upload API.
  * Returns the secure URL of the uploaded file.
  */
-export async function uploadToCloudinary(file: File): Promise<string> {
+export async function uploadToCloudinary(file: File, resourceType: "image" | "video" = "image"): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
   const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`,
     { method: "POST", body: formData }
   );
 
