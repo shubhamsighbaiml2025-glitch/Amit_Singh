@@ -2,9 +2,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
+import { useLocation } from 'wouter';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Analytics } from '@vercel/analytics/react';
+import { useEffect } from 'react';
 
 // Public Pages
 import Home from '@/pages/Home';
@@ -28,6 +30,16 @@ import AdminReviews from '@/pages/admin/Reviews';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
+
+function ScrollToTop() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location]);
+
+  return null;
+}
 
 function Router() {
   return (
@@ -61,6 +73,7 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+              <ScrollToTop />
               <Router />
             </WouterRouter>
             <Toaster position="top-center" richColors theme="system" />

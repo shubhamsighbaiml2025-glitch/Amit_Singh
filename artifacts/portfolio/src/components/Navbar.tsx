@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "./theme-toggle";
-import { Wrench, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -37,9 +37,11 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="bg-primary text-primary-foreground p-2 rounded-sm group-hover:bg-primary/90 transition-colors">
-            <Wrench size={24} className="stroke-[2.5]" />
-          </div>
+          <img
+            src="/sa-logo.svg"
+            alt="Singh Automobiles logo"
+            className="h-11 w-11 rounded-sm object-cover shadow-sm transition-transform group-hover:scale-105"
+          />
           <div className="flex flex-col">
             <span className="font-bold text-lg leading-none tracking-tight font-sans">
               SINGH

@@ -1,5 +1,6 @@
 import { Link } from "wouter";
-import { Wrench, Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin } from "lucide-react";
+import { FaFacebookF, FaInstagram, FaXTwitter } from "react-icons/fa6";
 import { useSiteContent } from "@/hooks/use-firestore";
 
 export function Footer() {
@@ -11,9 +12,11 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8 mb-12">
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="bg-primary text-primary-foreground p-1.5 rounded-sm">
-                <Wrench size={20} className="stroke-[2.5]" />
-              </div>
+              <img
+                src="/sa-logo.svg"
+                alt="Singh Automobiles logo"
+                className="h-10 w-10 rounded-sm object-cover"
+              />
               <span className="font-bold text-lg tracking-tight font-sans">
                 SINGH AUTOMOBILES
               </span>
@@ -60,6 +63,17 @@ export function Footer() {
                 <span>{content.location}</span>
               </li>
             </ul>
+            <div className="mt-5 flex items-center gap-3">
+              <a href="https://www.facebook.com/profile.php?id=61591959255900" target="_blank" rel="noreferrer" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+                <FaFacebookF size={16} />
+              </a>
+              <a href="https://www.instagram.com/singhautomobiles.in?igsh=MWo3YTJ4dWFtdmVxNw==" target="_blank" rel="noreferrer" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+                <FaInstagram size={17} />
+              </a>
+              <a href="https://x.com/SinghsAuto" target="_blank" rel="noreferrer" aria-label="X" className="flex h-9 w-9 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+                <FaXTwitter size={16} />
+              </a>
+            </div>
           </div>
         </div>
 
