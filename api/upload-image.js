@@ -42,7 +42,6 @@ export default async function handler(req, res) {
     formData.append("file", file);
     formData.append("upload_preset", uploadPreset);
     formData.append("public_id", `gallery/${fileHash}`);
-    formData.append("overwrite", "false");
     if (filename) formData.append("context", `original_filename=${String(filename)}`);
 
     const uploadResponse = await fetch(
