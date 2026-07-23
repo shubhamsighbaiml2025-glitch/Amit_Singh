@@ -1,3 +1,5 @@
+import { createHash } from "crypto";
+import { getAdminDb } from "./_firebase-admin.js";
 import { allowMethods, readJsonBody } from "./_json.js";
 
 const cloudName =
@@ -14,16 +16,34 @@ export default async function handler(req, res) {
       return;
     }
 
-    const { file, filename } = readJsonBody(req);
+    const { file, filename, hash } = readJsonBody(req);
     if (!file || typeof file !== "string") {
       res.status(400).json({ error: "Image file is required." });
       return;
     }
 
+    const fileHash =
+      typeof hash === "string" && hash.trim()
+        ? hash.trim()
+        : createHash("sha256").update(file).digest("hex");
+    const db = getAdminDb();
+    const assetRef = db.collection("uploaded_assets").doc(`image_${fileHash}`);
+    const existingAsset = await assetRef.get();
+
+    if (existingAsset.exists) {
+      const asset = existingAsset.data();
+      if (asset?.url) {
+        res.status(200).json({ ok: true, url: asset.url, reused: true });
+        return;
+      }
+    }
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", uploadPreset);
-    if (filename) formData.append("public_id", String(filename).replace(/\.[^.]+$/, ""));
+    formData.append("public_id", `gallery/${fileHash}`);
+    formData.append("overwrite", "false");
+    if (filename) formData.append("context", `original_filename=${String(filename)}`);
 
     const uploadResponse = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -37,7 +57,18 @@ export default async function handler(req, res) {
       return;
     }
 
-    res.status(200).json({ ok: true, url: payload.secure_url });
+    await assetRef.set(
+      {
+        url: payload.secure_url,
+        publicId: payload.public_id,
+        originalFilename: String(filename || ""),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      { merge: true },
+    );
+
+    res.status(200).json({ ok: true, url: payload.secure_url, reused: false });
   } catch (error) {
     console.error("Image upload failed:", error);
     res.status(500).json({ error: "Image upload failed." });

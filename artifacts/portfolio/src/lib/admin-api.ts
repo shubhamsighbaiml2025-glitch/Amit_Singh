@@ -15,6 +15,14 @@ export async function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
+export async function fileSha256(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 export async function uploadImage(file: File): Promise<string> {
   const response = await fetch("/api/upload-image", {
     method: "POST",
@@ -22,6 +30,7 @@ export async function uploadImage(file: File): Promise<string> {
     body: JSON.stringify({
       file: await fileToDataUrl(file),
       filename: file.name,
+      hash: await fileSha256(file),
     }),
   });
   const payload = await parseApiResponse<{ ok: true; url: string }>(response);
