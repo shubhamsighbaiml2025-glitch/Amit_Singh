@@ -89,14 +89,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to save enquiry." });
   }
 }
-
-      res.status(200).json({ ok: true, emailSent: true });
-    } catch (emailError) {
-      console.error("Enquiry saved, SMTP send failed:", emailError);
-      res.status(200).json({ ok: true, emailSent: false });
-    }
-  } catch (error) {
-    console.error("Enquiry save failed:", error);
-    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to save enquiry." });
-  }
-}
