@@ -5,6 +5,16 @@ import dotenv from "dotenv";
 import express from "express";
 import nodemailer from "nodemailer";
 import { getAdminDb } from "../api/_firebase-admin.js";
+import {
+  renderBrandedEmail,
+  getEmailTheme,
+} from "../api/_branded-email.js";
+import {
+  renderEnquiryAdminEmail,
+  renderEnquiryUserEmail,
+  renderReviewAdminEmail,
+  renderReviewUserEmail,
+} from "../api/_templates.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
@@ -16,13 +26,9 @@ const mailCredit = "build by asrvtech.in";
 
 app.use(express.json({ limit: "15mb" }));
 
-const requiredSmtpFields = [
-  "SMTP_HOST",
-  "SMTP_PORT",
-  "SMTP_USER",
-  "SMTP_PASS",
-  "SMTP_FROM_EMAIL",
-];
+// ─── SMTP Helpers ───────────────────────────────────────────────────────────
+
+const requiredSmtpFields = ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "SMTP_FROM_EMAIL"];
 
 function getMissingSmtpFields() {
   return requiredSmtpFields.filter((key) => !process.env[key]);
@@ -33,35 +39,28 @@ function createTransporter() {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   });
 }
 
 function appendCredit(message = "") {
-  const trimmed = String(message).trim();
-  return `${trimmed}\n\n${mailCredit}`;
+  return `${String(message).trim()}\n\n${mailCredit}`;
 }
 
 function normalizeRating(value) {
-  const rating = Number(value);
-  if (!Number.isFinite(rating)) return 5;
-  return Math.min(5, Math.max(1, Math.round(rating)));
+  const r = Number(value);
+  if (!Number.isFinite(r)) return 5;
+  return Math.min(5, Math.max(1, Math.round(r)));
 }
 
 function normalizeAttachments(files = []) {
   return files
-    .filter((file) => file?.name && file?.content && file?.type)
+    .filter((f) => f?.name && f?.content && f?.type)
     .slice(0, 5)
-    .map((file) => ({
-      filename: file.name,
-      content: file.content,
-      encoding: "base64",
-      contentType: file.type,
-    }));
+    .map((f) => ({ filename: f.name, content: f.content, encoding: "base64", contentType: f.type }));
 }
+
+// ─── Routes ─────────────────────────────────────────────────────────────────
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, smtpConfigured: getMissingSmtpFields().length === 0 });
@@ -82,35 +81,30 @@ app.post("/api/send-enquiry", async (req, res) => {
     }
 
     const transporter = createTransporter();
-    const submittedAt = new Date().toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-    });
+    const submittedAt = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
+    // Email to Admin
     await transporter.sendMail({
       from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
       to: adminEmail,
       replyTo: email,
       subject: `New enquiry from ${name}`,
-      text: [
-        `Name: ${name}`,
-        `Email: ${email}`,
-        `Phone: ${phone || "Not provided"}`,
-        `Submitted: ${submittedAt}`,
-        "",
-        appendCredit(message),
-      ].join("\n"),
+      text: [`Name: ${name}`, `Email: ${email}`, `Phone: ${phone || "Not provided"}`, `Submitted: ${submittedAt}`, "", appendCredit(message)].join("\n"),
+      html: renderEnquiryAdminEmail({ name: String(name), email: String(email), phone: String(phone || ""), message: String(message), submittedAt }),
     });
 
+    // Email to Customer
     await transporter.sendMail({
       from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
       to: email,
-      subject: "We received your enquiry",
-      text: appendCredit(`Hello ${name},\n\nThank you for reaching out to Singh Automobiles Engine Engineering. We will connect with you as soon as possible.\n\nRegards,\nSingh Automobiles`),
+      subject: "We received your enquiry — Singh Automobiles",
+      text: appendCredit(`Hello ${name},\n\nThank you for reaching out. We will connect with you shortly.\n\nRegards,\nSingh Automobiles`),
+      html: renderEnquiryUserEmail({ name: String(name), email: String(email), phone: String(phone || ""), message: String(message) }),
     });
 
     res.json({ ok: true });
   } catch (error) {
-    console.error("SMTP send failed:", error);
+    console.error("Enquiry SMTP failed:", error);
     res.status(500).json({ error: "Failed to send email." });
   }
 });
@@ -129,58 +123,36 @@ app.post("/api/send-review", async (req, res) => {
     }
 
     await getAdminDb().collection("reviews").add({
-      name: cleanName,
-      email: cleanEmail,
-      rating: cleanRating,
-      description: cleanDescription,
-      createdAt: new Date(),
+      name: cleanName, email: cleanEmail, rating: cleanRating, description: cleanDescription, createdAt: new Date(),
     });
 
     const missing = getMissingSmtpFields();
     if (missing.length > 0) {
-      console.warn(`Review saved, email skipped. Missing SMTP config: ${missing.join(", ")}`);
+      console.warn(`Review saved, email skipped. Missing: ${missing.join(", ")}`);
       res.json({ ok: true, emailSent: false });
       return;
     }
 
     const transporter = createTransporter();
-    const submittedAt = new Date().toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-    });
+    const submittedAt = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
+    // Email to Admin
     await transporter.sendMail({
       from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
       to: adminEmail,
       replyTo: cleanEmail,
       subject: `New ${cleanRating}-star review from ${cleanName}`,
-      text: [
-        `Name: ${cleanName}`,
-        `Email: ${cleanEmail}`,
-        `Rating: ${cleanRating}/5`,
-        `Submitted: ${submittedAt}`,
-        "",
-        appendCredit(cleanDescription),
-      ].join("\n"),
+      text: [`Name: ${cleanName}`, `Email: ${cleanEmail}`, `Rating: ${cleanRating}/5`, `Submitted: ${submittedAt}`, "", appendCredit(cleanDescription)].join("\n"),
+      html: renderReviewAdminEmail({ name: cleanName, email: cleanEmail, rating: cleanRating, description: cleanDescription, submittedAt }),
     });
 
+    // Email to Customer
     await transporter.sendMail({
       from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
       to: cleanEmail,
       subject: "Thank you for reviewing Singh Automobiles",
-      text: appendCredit(
-        [
-          `Hello ${cleanName},`,
-          "",
-          "Thank you for reviewing Singh Automobiles Engine Engineering. We truly appreciate your feedback and your trust in our service.",
-          "",
-          `Your rating: ${cleanRating}/5`,
-          "Your review:",
-          cleanDescription,
-          "",
-          "Regards,",
-          "Singh Automobiles",
-        ].join("\n"),
-      ),
+      text: appendCredit(`Hello ${cleanName},\n\nThank you for your ${cleanRating}-star review. We truly appreciate your feedback.\n\nRegards,\nSingh Automobiles`),
+      html: renderReviewUserEmail({ name: cleanName, email: cleanEmail, rating: cleanRating, description: cleanDescription }),
     });
 
     res.json({ ok: true, emailSent: true });
@@ -198,25 +170,34 @@ app.post("/api/admin-send-mail", async (req, res) => {
       return;
     }
 
-    const { to, subject, message, attachments } = req.body || {};
+    const { to, subject, message, attachments, themeId = "precision" } = req.body || {};
     if (!to || !subject || !message) {
       res.status(400).json({ error: "To, subject, and message are required." });
       return;
     }
 
     const transporter = createTransporter();
+    const normalizedFiles = normalizeAttachments(attachments);
+
+    const htmlBody = renderBrandedEmail({
+      themeId: String(themeId || "precision"),
+      subject: String(subject),
+      message: String(message),
+      attachmentsCount: normalizedFiles.length,
+    });
 
     await transporter.sendMail({
       from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
       to,
-      subject,
-      text: appendCredit(message),
-      attachments: normalizeAttachments(attachments),
+      subject: String(subject),
+      text: appendCredit(String(message)),
+      html: htmlBody,
+      attachments: normalizedFiles,
     });
 
     res.json({ ok: true });
   } catch (error) {
-    console.error("SMTP send failed:", error);
+    console.error("Admin mail SMTP failed:", error);
     res.status(500).json({ error: "Failed to send email." });
   }
 });

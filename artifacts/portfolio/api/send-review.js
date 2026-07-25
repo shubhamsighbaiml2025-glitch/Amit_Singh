@@ -6,11 +6,12 @@ import {
   getMissingSmtpFields,
 } from "./_mail.js";
 import { getAdminDb } from "./_firebase-admin.js";
+import { renderReviewAdminEmail, renderReviewUserEmail } from "./_templates.js";
 
 function normalizeRating(value) {
-  const rating = Number(value);
-  if (!Number.isFinite(rating)) return 5;
-  return Math.min(5, Math.max(1, Math.round(rating)));
+  const r = Number(value);
+  if (!Number.isFinite(r)) return 5;
+  return Math.min(5, Math.max(1, Math.round(r)));
 }
 
 export default async function handler(req, res) {
@@ -38,55 +39,37 @@ export default async function handler(req, res) {
 
     const missingSmtpFields = getMissingSmtpFields();
     if (missingSmtpFields.length > 0) {
-      console.warn(`Review saved, email skipped. Missing SMTP config: ${missingSmtpFields.join(", ")}`);
+      console.warn(`Review saved, email skipped. Missing SMTP: ${missingSmtpFields.join(", ")}`);
       res.status(200).json({ ok: true, emailSent: false });
       return;
     }
 
     try {
       const transporter = createTransporter();
-      const submittedAt = new Date().toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-      });
+      const submittedAt = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
+      // Email to Admin
       await transporter.sendMail({
         from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
         to: adminEmail,
         replyTo: cleanEmail,
         subject: `New ${cleanRating}-star review from ${cleanName}`,
-        text: [
-          `Name: ${cleanName}`,
-          `Email: ${cleanEmail}`,
-          `Rating: ${cleanRating}/5`,
-          `Submitted: ${submittedAt}`,
-          "",
-          appendCredit(cleanDescription),
-        ].join("\n"),
+        text: [`Name: ${cleanName}`, `Email: ${cleanEmail}`, `Rating: ${cleanRating}/5`, `Submitted: ${submittedAt}`, "", appendCredit(cleanDescription)].join("\n"),
+        html: renderReviewAdminEmail({ name: cleanName, email: cleanEmail, rating: cleanRating, description: cleanDescription, submittedAt }),
       });
 
+      // Email to Customer
       await transporter.sendMail({
         from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
         to: cleanEmail,
         subject: "Thank you for reviewing Singh Automobiles",
-        text: appendCredit(
-          [
-            `Hello ${cleanName},`,
-            "",
-            "Thank you for reviewing Singh Automobiles Engine Engineering. We truly appreciate your feedback and your trust in our service.",
-            "",
-            `Your rating: ${cleanRating}/5`,
-            "Your review:",
-            cleanDescription,
-            "",
-            "Regards,",
-            "Singh Automobiles",
-          ].join("\n"),
-        ),
+        text: appendCredit(`Hello ${cleanName},\n\nThank you for reviewing Singh Automobiles Engine Engineering. We truly appreciate your feedback.\n\nYour rating: ${cleanRating}/5\n\nRegards,\nSingh Automobiles`),
+        html: renderReviewUserEmail({ name: cleanName, email: cleanEmail, rating: cleanRating, description: cleanDescription }),
       });
 
       res.status(200).json({ ok: true, emailSent: true });
     } catch (emailError) {
-      console.error("Review saved, SMTP send failed:", emailError);
+      console.error("Review saved, SMTP failed:", emailError);
       res.status(200).json({ ok: true, emailSent: false });
     }
   } catch (error) {

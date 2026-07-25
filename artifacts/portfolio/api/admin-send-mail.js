@@ -5,25 +5,35 @@ import {
   createTransporter,
   normalizeAttachments,
 } from "./_mail.js";
+import { renderBrandedEmail } from "./_branded-email.js";
 
 export default async function handler(req, res) {
   if (!allowOnlyPost(req, res) || !assertSmtpConfigured(res)) return;
 
   try {
-    const { to, subject, message, attachments } = req.body || {};
+    const { to, subject, message, attachments, themeId = "precision" } = req.body || {};
     if (!to || !subject || !message) {
       res.status(400).json({ error: "To, subject, and message are required." });
       return;
     }
 
     const transporter = createTransporter();
+    const normalizedFiles = normalizeAttachments(attachments);
+
+    const htmlBody = renderBrandedEmail({
+      themeId: String(themeId || "precision"),
+      subject: String(subject),
+      message: String(message),
+      attachmentsCount: normalizedFiles.length,
+    });
 
     await transporter.sendMail({
       from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
       to,
-      subject,
-      text: appendCredit(message),
-      attachments: normalizeAttachments(attachments),
+      subject: String(subject),
+      text: appendCredit(String(message)),
+      html: htmlBody,
+      attachments: normalizedFiles,
     });
 
     res.status(200).json({ ok: true });
