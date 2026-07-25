@@ -170,7 +170,7 @@ app.post("/api/admin-send-mail", async (req, res) => {
       return;
     }
 
-    const { to, subject, message, attachments, themeId = "precision" } = req.body || {};
+    const { to, subject, message, attachments, themeId = "precision", badgeText } = req.body || {};
     if (!to || !subject || !message) {
       res.status(400).json({ error: "To, subject, and message are required." });
       return;
@@ -183,6 +183,7 @@ app.post("/api/admin-send-mail", async (req, res) => {
       themeId: String(themeId || "precision"),
       subject: String(subject),
       message: String(message),
+      badgeText: badgeText ? String(badgeText) : undefined,
       attachmentsCount: normalizedFiles.length,
     });
 
