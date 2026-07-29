@@ -1,179 +1,241 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import PDFDocument from "pdfkit";
 import QRCode from "qrcode";
-import { drawQrInPdf } from "./_invoice-qr.js";
 
-function pdfEscape(value = "") {
-  return String(value)
-    .replace(/\\/g, "\\\\")
-    .replace(/\(/g, "\\(")
-    .replace(/\)/g, "\\)")
-    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "");
-}
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-function money(value = 0) {
-  return `INR ${Number(value || 0).toFixed(2)}`;
-}
+const signatureCandidates = [
+  path.resolve(__dirname, "../public/assets/authorized-signature.png"),
+  path.resolve(__dirname, "./assets/authorized-signature.png"),
+  path.resolve(process.cwd(), "public/assets/authorized-signature.png"),
+];
 
-function line(text, x, y, size = 10) {
-  return `BT /F1 ${size} Tf ${x} ${y} Td (${pdfEscape(text)}) Tj ET\n`;
-}
-
-function bold(text, x, y, size = 12) {
-  return `BT /F2 ${size} Tf ${x} ${y} Td (${pdfEscape(text)}) Tj ET\n`;
-}
-
-function rect(x, y, w, h, fill = false) {
-  return fill ? `${x} ${y} ${w} ${h} re f\n` : `${x} ${y} ${w} ${h} re S\n`;
+function formatCurrency(value = 0) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0));
 }
 
 function formatDisplayDate(value) {
   if (!value) return "-";
-  const date = new Date(value);
+  const raw = typeof value === "object" && value !== null && "toDate" in value
+    ? value.toDate()
+    : value;
+  const date = raw instanceof Date ? raw : new Date(raw);
   if (Number.isNaN(date.getTime())) return String(value);
-  return new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
-export function generateInvoicePdf(invoice, verifyUrl) {
-  const chunks = [];
-  let y = 790;
-
-  // Accent bar
-  chunks.push("0.96 0.72 0.0 rg\n");
-  chunks.push(rect(0, 832, 595, 10, true));
-  chunks.push("0 0 0 RG\n");
-
-  // Header background
-  chunks.push("1 1 1 rg\n");
-  chunks.push(rect(0, 0, 595, 842, true));
-  chunks.push("0 0 0 RG\n");
-
-  chunks.push(bold(invoice.company?.name || "Singh Automobiles", 40, y, 16));
-  y -= 16;
-  chunks.push(line(invoice.company?.address || "India", 40, y, 9));
-  y -= 13;
-  chunks.push(line(`${invoice.company?.phone || ""} | ${invoice.company?.email || ""}`, 40, y, 9));
-  if (invoice.company?.gstNumber) {
-    y -= 13;
-    chunks.push(line(`GSTIN: ${invoice.company.gstNumber}`, 40, y, 9));
-  }
-
-  chunks.push(bold("TAX INVOICE", 400, 790, 18));
-  chunks.push(line(invoice.invoiceNumber, 400, 770, 10));
-  chunks.push(bold(`Status: ${invoice.status}`, 400, 754, 10));
-
-  // Bill To box
-  chunks.push("0.95 0.95 0.95 rg\n");
-  chunks.push(rect(40, 648, 515, 82, true));
-  chunks.push("0.85 0.85 0.85 RG\n");
-  chunks.push(rect(40, 648, 515, 82));
-  chunks.push("0 0 0 RG\n");
-
-  chunks.push(bold("Bill To", 54, 708, 10));
-  chunks.push(bold(invoice.customer?.companyName || invoice.customer?.name || "", 54, 690, 12));
-  chunks.push(line(invoice.customer?.companyName ? invoice.customer?.name : "", 54, 674, 9));
-  chunks.push(line(`${invoice.customer?.phone || ""} | ${invoice.customer?.email || ""}`, 54, 660, 8));
-  chunks.push(line(`Invoice Date: ${formatDisplayDate(invoice.invoiceDate)}`, 380, 704, 9));
-  chunks.push(line(`Due Date: ${formatDisplayDate(invoice.dueDate)}`, 380, 688, 9));
-  chunks.push(bold(`Amount Due: ${money(invoice.totals?.roundedTotal)}`, 380, 668, 10));
-  if (invoice.customer?.gstNumber) {
-    chunks.push(line(`GSTIN: ${invoice.customer.gstNumber}`, 54, 646, 8));
-  }
-
-  // Table header
-  y = 620;
-  chunks.push("0.07 0.07 0.07 rg\n");
-  chunks.push(rect(40, 606, 515, 20, true));
-  chunks.push("1 1 1 rg\n");
-  chunks.push(bold("#", 46, 612, 9));
-  chunks.push(bold("Service", 62, 612, 9));
-  chunks.push(bold("Description", 170, 612, 9));
-  chunks.push(bold("Qty", 360, 612, 9));
-  chunks.push(bold("Rate", 400, 612, 9));
-  chunks.push(bold("Amount", 478, 612, 9));
-  chunks.push("0 0 0 rg\n");
-
-  (invoice.services || []).slice(0, 14).forEach((item, index) => {
-    y -= 18;
-    chunks.push(line(String(index + 1), 46, y, 9));
-    chunks.push(line(item.name || "", 62, y, 9));
-    chunks.push(line((item.description || "").slice(0, 42), 170, y, 8));
-    chunks.push(line(String(item.quantity || 0), 366, y, 9));
-    chunks.push(line(money(item.unitPrice), 400, y, 9));
-    chunks.push(line(money(item.total), 478, y, 9));
-    chunks.push("0.9 0.9 0.9 RG\n");
-    chunks.push(`${40} ${y - 4} 515 0.5 re f\n`);
-    chunks.push("0 0 0 RG\n");
-  });
-
-  y -= 28;
-  chunks.push(bold("Invoice Summary", 350, y, 11));
-  y -= 18;
-  [
-    ["Subtotal", money(invoice.totals?.subtotal)],
-    [`Discount (${invoice.totals?.discountPercent || 0}%)`, `- ${money(invoice.totals?.discountAmount)}`],
-    [`GST (${invoice.totals?.gstPercent || 0}%)`, money(invoice.totals?.gstAmount)],
-    ["Round Off", money(invoice.totals?.roundOff)],
-    ["Grand Total", money(invoice.totals?.roundedTotal)],
-  ].forEach(([label, value]) => {
-    chunks.push(line(label, 350, y, 9));
-    chunks.push(bold(value, 462, y, 9));
-    y -= 15;
-  });
-
-  chunks.push(line(`Amount in words: ${invoice.totals?.amountInWords || ""}`, 40, 250, 8));
-
-  chunks.push(bold("Terms & Conditions", 40, 228, 10));
-  let termY = 212;
-  (invoice.terms || []).slice(0, 6).forEach((term, index) => {
-    chunks.push(line(`${index + 1}. ${String(term).slice(0, 95)}`, 48, termY, 7));
-    termY -= 11;
-  });
-
-  // QR verification section
-  chunks.push("0.95 0.95 0.95 rg\n");
-  chunks.push(rect(40, 52, 280, 96, true));
-  chunks.push("0.85 0.85 0.85 RG\n");
-  chunks.push(rect(40, 52, 280, 96));
-  chunks.push("0 0 0 RG\n");
-
-  drawQrInPdf(chunks, verifyUrl, 48, 60, 72);
-  chunks.push(bold("Scan to Verify Invoice", 132, 128, 9));
-  chunks.push(line("Scan with any phone camera", 132, 114, 8));
-  chunks.push(line("to open the verification page.", 132, 102, 8));
-  chunks.push(line(verifyUrl.slice(0, 48), 132, 88, 6));
-  if (verifyUrl.length > 48) {
-    chunks.push(line(verifyUrl.slice(48, 96), 132, 78, 6));
-  }
-
-  chunks.push(bold("Authorized Signature", 400, 100, 10));
-  chunks.push(line(invoice.company?.name || "", 400, 84, 8));
-  chunks.push(line("Computer-generated invoice.", 400, 68, 7));
-
-  const stream = chunks.join("");
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
-    `<< /Length ${Buffer.byteLength(stream, "latin1")} >>\nstream\n${stream}endstream`,
-  ];
-
-  let pdf = "%PDF-1.4\n";
-  const offsets = [0];
-  objects.forEach((obj, index) => {
-    offsets.push(Buffer.byteLength(pdf, "latin1"));
-    pdf += `${index + 1} 0 obj\n${obj}\nendobj\n`;
-  });
-  const xref = Buffer.byteLength(pdf, "latin1");
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  offsets.slice(1).forEach((offset) => {
-    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
-  return Buffer.from(pdf, "latin1");
+function normalizeInvoice(invoice = {}) {
+  return {
+    ...invoice,
+    company: {
+      name: "Singh Automobiles Engine Engineering",
+      address: "India",
+      phone: "+91 9905804791",
+      email: "amitsingh6061.innet@gmail.com",
+      gstNumber: "",
+      ...(invoice.company || {}),
+    },
+    customer: invoice.customer || {},
+    services: Array.isArray(invoice.services) ? invoice.services : [],
+    totals: invoice.totals || {},
+    terms: Array.isArray(invoice.terms) ? invoice.terms : [],
+    status: invoice.status || "Pending",
+  };
 }
 
-/** Generate QR as PNG buffer (for optional future use). */
-export async function generateQrPng(data, size = 180) {
-  return QRCode.toBuffer(String(data), { width: size, margin: 1, errorCorrectionLevel: "M" });
+function resolveSignaturePath() {
+  return signatureCandidates.find((candidate) => fs.existsSync(candidate)) || null;
+}
+
+function writeLabelValue(doc, label, value, x, y, width = 170) {
+  doc.font("Helvetica").fontSize(9).fillColor("#64748b").text(label, x, y, { width });
+  doc.font("Helvetica-Bold").fontSize(9).fillColor("#0f172a").text(String(value || "-"), x, y + 12, { width });
+}
+
+export async function generateInvoicePdf(invoiceInput, verifyUrl) {
+  const invoice = normalizeInvoice(invoiceInput);
+  const qrBuffer = await QRCode.toBuffer(String(verifyUrl), {
+    width: 140,
+    margin: 1,
+    errorCorrectionLevel: "M",
+    color: { dark: "#0f172a", light: "#ffffff" },
+  });
+
+  const signaturePath = resolveSignaturePath();
+
+  const pdfBuffer = await new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: "A4", margin: 36, autoFirstPage: true });
+    const chunks = [];
+
+    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("end", () => {
+      const buffer = Buffer.concat(chunks);
+      if (buffer.length < 500) {
+        reject(new Error("Generated PDF buffer is empty."));
+        return;
+      }
+      resolve(buffer);
+    });
+    doc.on("error", reject);
+
+    const pageWidth = doc.page.width;
+    const contentWidth = pageWidth - 72;
+    const left = 36;
+    let cursorY = 56;
+
+    doc.save();
+    doc.rect(left, 36, contentWidth, 6).fill("#f5b800");
+    doc.restore();
+
+    doc.font("Helvetica-Bold").fontSize(16).fillColor("#0f172a")
+      .text(invoice.company.name, left, cursorY, { width: 320 });
+    cursorY = doc.y + 4;
+
+    doc.font("Helvetica").fontSize(9).fillColor("#475569")
+      .text(invoice.company.address || "India", left, cursorY, { width: 320 });
+    cursorY = doc.y + 2;
+    doc.text(`${invoice.company.phone || ""} · ${invoice.company.email || ""}`, left, cursorY, { width: 320 });
+    cursorY = doc.y + 2;
+
+    if (invoice.company.gstNumber) {
+      doc.text(`GSTIN: ${invoice.company.gstNumber}`, left, cursorY, { width: 320 });
+      cursorY = doc.y + 2;
+    }
+
+    doc.font("Helvetica-Bold").fontSize(20).fillColor("#0f172a")
+      .text("INVOICE", pageWidth - 170, 56, { width: 130, align: "right" });
+    doc.font("Helvetica").fontSize(10).fillColor("#475569")
+      .text(invoice.invoiceNumber || "-", pageWidth - 170, 82, { width: 130, align: "right" })
+      .text(`Status: ${invoice.status}`, pageWidth - 170, 96, { width: 130, align: "right" });
+
+    const boxTop = Math.max(cursorY + 18, 118);
+    doc.roundedRect(left, boxTop, contentWidth, 88, 4).fillAndStroke("#f8fafc", "#e2e8f0");
+
+    doc.font("Helvetica-Bold").fontSize(10).fillColor("#64748b")
+      .text("BILL TO", 48, boxTop + 12);
+    doc.font("Helvetica-Bold").fontSize(13).fillColor("#0f172a")
+      .text(invoice.customer.companyName || invoice.customer.name || "-", 48, boxTop + 28, { width: 280 });
+
+    let billY = doc.y + 2;
+    if (invoice.customer.companyName) {
+      doc.font("Helvetica").fontSize(9).fillColor("#334155")
+        .text(invoice.customer.name || "", 48, billY, { width: 280 });
+      billY = doc.y + 2;
+    }
+
+    doc.font("Helvetica").fontSize(9).fillColor("#334155")
+      .text(`${invoice.customer.phone || ""} · ${invoice.customer.email || ""}`, 48, billY, { width: 280 });
+    billY = doc.y + 2;
+    doc.text(invoice.customer.address || "", 48, billY, { width: 280 });
+    billY = doc.y + 2;
+
+    if (invoice.customer.gstNumber) {
+      doc.text(`GSTIN: ${invoice.customer.gstNumber}`, 48, billY, { width: 280 });
+    }
+
+    writeLabelValue(doc, "Invoice Date", formatDisplayDate(invoice.invoiceDate), pageWidth - 210, boxTop + 18);
+    writeLabelValue(doc, "Due Date", formatDisplayDate(invoice.dueDate), pageWidth - 210, boxTop + 44);
+    writeLabelValue(doc, "Amount Due", formatCurrency(invoice.totals.roundedTotal), pageWidth - 210, boxTop + 70);
+
+    const tableTop = boxTop + 104;
+    const columns = [
+      { label: "#", x: 40, w: 20 },
+      { label: "Service", x: 62, w: 120 },
+      { label: "Description", x: 185, w: 170 },
+      { label: "Qty", x: 360, w: 30 },
+      { label: "Rate", x: 395, w: 70 },
+      { label: "Amount", x: 470, w: 80 },
+    ];
+
+    doc.rect(left, tableTop, contentWidth, 22).fill("#0f172a");
+    doc.font("Helvetica-Bold").fontSize(9).fillColor("#ffffff");
+    columns.forEach((col) => doc.text(col.label, col.x, tableTop + 7, { width: col.w }));
+
+    let rowY = tableTop + 28;
+    invoice.services.forEach((item, index) => {
+      if (rowY > 620) return;
+      doc.font("Helvetica").fontSize(9).fillColor("#0f172a");
+      doc.text(String(index + 1), columns[0].x, rowY, { width: columns[0].w });
+      doc.font("Helvetica-Bold").text(item.name || "-", columns[1].x, rowY, { width: columns[1].w });
+      doc.font("Helvetica").fillColor("#475569").text(item.description || "", columns[2].x, rowY, { width: columns[2].w });
+      doc.fillColor("#0f172a").text(String(item.quantity || 0), columns[3].x, rowY, { width: columns[3].w, align: "right" });
+      doc.text(formatCurrency(item.unitPrice), columns[4].x, rowY, { width: columns[4].w, align: "right" });
+      doc.font("Helvetica-Bold").text(formatCurrency(item.total), columns[5].x, rowY, { width: columns[5].w, align: "right" });
+      doc.moveTo(left, rowY + 14).lineTo(pageWidth - left, rowY + 14).strokeColor("#e2e8f0").stroke();
+      rowY += 18;
+    });
+
+    const summaryTop = Math.max(rowY + 10, 430);
+    const summaryX = pageWidth - 220;
+    const summary = [
+      ["Subtotal", formatCurrency(invoice.totals.subtotal)],
+      [`Discount (${invoice.totals.discountPercent || 0}%)`, `- ${formatCurrency(invoice.totals.discountAmount)}`],
+      [`GST (${invoice.totals.gstPercent || 0}%)`, formatCurrency(invoice.totals.gstAmount)],
+      ["Round Off", formatCurrency(invoice.totals.roundOff)],
+      ["Grand Total", formatCurrency(invoice.totals.roundedTotal)],
+    ];
+
+    summary.forEach(([label, value], index) => {
+      const y = summaryTop + index * 16;
+      doc.font(index === summary.length - 1 ? "Helvetica-Bold" : "Helvetica")
+        .fontSize(index === summary.length - 1 ? 11 : 9)
+        .fillColor("#0f172a")
+        .text(label, summaryX, y, { width: 90 });
+      doc.text(value, summaryX + 95, y, { width: 90, align: "right" });
+    });
+
+    doc.font("Helvetica").fontSize(8).fillColor("#64748b")
+      .text(`Amount in words: ${invoice.totals.amountInWords || ""}`, left, summaryTop + 90, { width: 300 });
+
+    doc.font("Helvetica-Bold").fontSize(10).fillColor("#0f172a")
+      .text("Terms & Conditions", left, summaryTop + 112, { width: 300 });
+
+    let termY = summaryTop + 126;
+    invoice.terms.slice(0, 5).forEach((term, index) => {
+      doc.font("Helvetica").fontSize(7.5).fillColor("#475569")
+        .text(`${index + 1}. ${String(term).slice(0, 120)}`, 42, termY, { width: 300 });
+      termY += 12;
+    });
+
+    const footerY = 700;
+    doc.roundedRect(left, footerY, 250, 92, 4).fillAndStroke("#f8fafc", "#e2e8f0");
+    doc.image(qrBuffer, 44, footerY + 8, { width: 72, height: 72 });
+    doc.font("Helvetica-Bold").fontSize(9).fillColor("#0f172a")
+      .text("Scan to Verify Invoice", 126, footerY + 14, { width: 150 })
+      .font("Helvetica").fontSize(8).fillColor("#475569")
+      .text("Anyone can scan anytime to verify this invoice online. No expiry or view limit.", 126, footerY + 28, { width: 150 })
+      .fontSize(6.5).fillColor("#64748b")
+      .text(String(verifyUrl).slice(0, 70), 126, footerY + 58, { width: 150 });
+
+    const signatureX = pageWidth - 190;
+    if (signaturePath) {
+      doc.image(signaturePath, signatureX, footerY + 4, { fit: [130, 52], align: "right" });
+    }
+
+    doc.moveTo(signatureX, footerY + 62).lineTo(pageWidth - left, footerY + 62).strokeColor("#94a3b8").stroke();
+    doc.font("Helvetica-Bold").fontSize(9).fillColor("#0f172a")
+      .text("Authorized Signature", signatureX, footerY + 68, { width: 154, align: "right" })
+      .font("Helvetica").fontSize(8).fillColor("#64748b")
+      .text(invoice.company.name, signatureX, footerY + 80, { width: 154, align: "right" });
+
+    doc.font("Helvetica").fontSize(7).fillColor("#94a3b8")
+      .text("This is a computer-generated invoice. Scan the QR code to verify authenticity online.", left, 808, {
+        width: contentWidth,
+        align: "center",
+      });
+
+    doc.end();
+  });
+
+  return pdfBuffer;
 }

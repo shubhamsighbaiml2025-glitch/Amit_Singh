@@ -4,6 +4,7 @@ import { InvoiceQrCode } from "@/components/InvoiceQrCode";
 
 export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
   const verifyLink = verificationUrl(invoice.verificationToken);
+  const signatureSrc = invoice.company?.signatureUrl || "/assets/authorized-signature.png";
 
   return (
     <article className="invoice-document mx-auto max-w-[820px] bg-white text-slate-950 shadow-sm print:max-w-none print:shadow-none">
@@ -154,7 +155,7 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
               <div className="min-w-0 text-xs text-slate-600">
                 <p className="text-sm font-bold text-slate-950">Scan to Verify Invoice</p>
                 <p className="mt-1 leading-relaxed">
-                  Anyone can scan this QR code with a phone camera to open the official verification page and confirm this invoice is authentic.
+                  Anyone can scan this QR code anytime with a phone camera to open the official verification page. No expiry or view limit.
                 </p>
                 <p className="mt-2 break-all font-mono text-[10px] text-slate-500">{verifyLink}</p>
               </div>
@@ -162,15 +163,11 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
           </div>
 
           <div className="text-right">
-            {invoice.company.signatureUrl ? (
-              <img
-                src={invoice.company.signatureUrl}
-                alt="Authorized signature"
-                className="ml-auto h-16 max-w-48 object-contain"
-              />
-            ) : (
-              <div className="ml-auto h-16" />
-            )}
+            <img
+              src={signatureSrc}
+              alt="Authorized signature"
+              className="ml-auto h-20 max-w-56 object-contain"
+            />
             <div className="mt-2 border-t border-slate-400 pt-2 text-sm font-bold">Authorized Signature</div>
             <p className="mt-1 text-xs text-slate-500">{invoice.company.name}</p>
           </div>

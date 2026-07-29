@@ -21,6 +21,7 @@ import {
   makeService,
   verificationUrl,
 } from "@/lib/invoice-utils";
+import { downloadInvoicePdf } from "@/lib/invoice-pdf-client";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const due = () => new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
@@ -128,18 +129,10 @@ export default function AdminInvoices() {
 
   const downloadPdf = async (invoice: Invoice) => {
     try {
-      const response = await fetch(`/api/invoice-pdf?token=${encodeURIComponent(invoice.verificationToken)}`);
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null);
-        throw new Error(payload?.error || "PDF generation failed");
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `${invoice.invoiceNumber}.pdf`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      await downloadInvoicePdf({
+        invoiceId: invoice.id,
+        filename: `${invoice.invoiceNumber}.pdf`,
+      });
       toast.success("PDF downloaded");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to download PDF");
@@ -325,6 +318,7 @@ export default function AdminInvoices() {
             </div>
           </div>
         ) : null}
+
       </AdminLayout>
     </AuthGuard>
   );

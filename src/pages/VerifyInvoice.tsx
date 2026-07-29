@@ -4,21 +4,7 @@ import { useInvoiceByToken } from "@/hooks/use-invoices";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, Download, Loader2, Printer } from "lucide-react";
 import { toast } from "sonner";
-
-async function downloadInvoicePdf(token: string, invoiceNumber: string) {
-  const response = await fetch(`/api/invoice-pdf?token=${encodeURIComponent(token)}`);
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null);
-    throw new Error(payload?.error || "PDF generation failed");
-  }
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = `${invoiceNumber}.pdf`;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
+import { downloadInvoicePdf } from "@/lib/invoice-pdf-client";
 
 export default function VerifyInvoice() {
   const token = new URLSearchParams(window.location.search).get("token") || "";
@@ -27,7 +13,10 @@ export default function VerifyInvoice() {
   const handleDownloadPdf = async () => {
     if (!invoice) return;
     try {
-      await downloadInvoicePdf(invoice.verificationToken, invoice.invoiceNumber);
+      await downloadInvoicePdf({
+        token: invoice.verificationToken,
+        filename: `${invoice.invoiceNumber}.pdf`,
+      });
       toast.success("PDF downloaded");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to download PDF");
@@ -40,7 +29,7 @@ export default function VerifyInvoice() {
         <div className="container mx-auto px-4 md:px-6">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">Invoice Verification</h1>
           <p className="text-muted-foreground max-w-2xl">
-            Scan the QR code on your invoice or open this secure link to verify authenticity.
+            Scan the QR code on your invoice or open this secure link to verify authenticity anytime. No expiry or view limit.
           </p>
         </div>
       </div>
@@ -58,7 +47,7 @@ export default function VerifyInvoice() {
                 <div>
                   <h2 className="font-bold text-emerald-500">Verified Invoice</h2>
                   <p className="text-sm text-muted-foreground">
-                    {invoice.invoiceNumber} is a valid Singh Automobiles invoice.
+                    {invoice.invoiceNumber} is a valid Singh Automobiles invoice. You can view it anytime.
                   </p>
                 </div>
               </div>
