@@ -33,7 +33,6 @@ interface EmailThemeOption {
   id: string;
   label: string;
   desc: string;
-  badge: string;
   bg: string;
   panel: string;
   panel2: string;
@@ -52,7 +51,6 @@ const TEMPLATE_OPTIONS: EmailThemeOption[] = [
     id: "precision",
     label: "1. Precision Gold",
     desc: "Industrial Dark & Amber Gold (Website Match)",
-    badge: "OFFICIAL COMMUNICATION",
     bg: "#07090E",
     panel: "#0F172A",
     panel2: "#131C31",
@@ -69,7 +67,6 @@ const TEMPLATE_OPTIONS: EmailThemeOption[] = [
     id: "performance",
     label: "2. Performance Red",
     desc: "High-Energy Crimson & Flame Orange",
-    badge: "PERFORMANCE NOTICE",
     bg: "#0D0406",
     panel: "#1A0A0F",
     panel2: "#260E16",
@@ -86,7 +83,6 @@ const TEMPLATE_OPTIONS: EmailThemeOption[] = [
     id: "trust",
     label: "3. Electric Blue",
     desc: "Tech Diagnostics Sapphire & Cyan",
-    badge: "SERVICE CARE UPDATE",
     bg: "#040D1A",
     panel: "#0B192E",
     panel2: "#10233F",
@@ -103,7 +99,6 @@ const TEMPLATE_OPTIONS: EmailThemeOption[] = [
     id: "luxury",
     label: "4. Emerald Green",
     desc: "Premium Machinery Care & Emerald",
-    badge: "PREMIUM SERVICE MESSAGE",
     bg: "#03140E",
     panel: "#082119",
     panel2: "#0E3025",
@@ -169,9 +164,6 @@ function buildPreviewHtml(themeId: string, subject: string, message: string, att
 
         <!-- Header -->
         <tr><td style="padding:32px 32px 24px;background-color:${theme.panel2};border-bottom:1px solid ${theme.border};">
-          <div style="display:inline-block;padding:4px 12px;background:${theme.accentGlow};border:1px solid ${theme.border};border-radius:20px;margin-bottom:12px;">
-            <span style="color:${theme.accent};font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">${theme.badge}</span>
-          </div>
           <h1 style="margin:0;color:#FFFFFF;font-size:22px;font-weight:700;letter-spacing:-0.3px;line-height:1.3;">${safeSubject}</h1>
         </td></tr>
 
@@ -345,7 +337,7 @@ export default function AdminMail() {
                             : "bg-muted/30 border-border hover:border-border/80 hover:bg-muted/50"
                         }`}
                       >
-                        <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
                           <div className="flex items-center gap-2">
                             {/* Color Circle */}
                             <div
@@ -361,16 +353,7 @@ export default function AdminMail() {
                           )}
                         </div>
 
-                        <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{tmpl.desc}</p>
-
-                        <div className="mt-2 pt-2 border-t border-border/50 flex items-center justify-between">
-                          <span
-                            className="text-[9px] font-bold px-2 py-0.5 rounded-md text-white uppercase tracking-wider"
-                            style={{ background: tmpl.accentGlow, color: tmpl.accent, border: `1px solid ${tmpl.border}` }}
-                          >
-                            {tmpl.badge}
-                          </span>
-                        </div>
+                        <p className="text-[11px] text-muted-foreground leading-snug">{tmpl.desc}</p>
                       </div>
                     );
                   })}
@@ -530,9 +513,6 @@ export default function AdminMail() {
                   <span className="text-xs font-bold text-foreground">{activeTheme.label}</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">{activeTheme.desc}</p>
-                <div className="inline-block px-2.5 py-1 rounded border text-[10px] font-bold uppercase tracking-wider" style={{ background: activeTheme.accentGlow, color: activeTheme.accent, borderColor: activeTheme.border }}>
-                  Badge: {activeTheme.badge}
-                </div>
               </div>
             </div>
 
@@ -572,9 +552,6 @@ export default function AdminMail() {
                 <div className="rounded-lg overflow-hidden border border-border/40 text-[0]">
                   <div className="h-1.5" style={{ background: activeTheme.gradient }} />
                   <div className="p-3" style={{ background: activeTheme.panel }}>
-                    <div className="inline-block px-2 py-0.5 rounded-full mb-1.5" style={{ background: activeTheme.accentGlow, border: `1px solid ${activeTheme.border}` }}>
-                      <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: activeTheme.accent }}>{activeTheme.badge}</span>
-                    </div>
                     <p className="text-[11px] font-semibold text-white truncate">{subject || "Your subject line"}</p>
                     <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-2">{message || "Your message preview..."}</p>
                   </div>

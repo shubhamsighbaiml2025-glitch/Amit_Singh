@@ -183,23 +183,59 @@ export default function AdminInvoices() {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="font-bold">Service Rows</h2>
+                <div>
+                  <h2 className="font-bold">Service Details</h2>
+                  <p className="text-xs text-muted-foreground">Add each repair, diagnostic, part, visit charge, or machinery service as a separate line.</p>
+                </div>
                 <Button size="sm" variant="outline" onClick={() => updateServices([...draft.services, makeService()])}><Plus className="mr-2 h-4 w-4" />Add Service</Button>
               </div>
               {draft.services.map((item, index) => (
-                <div key={item.id} className="grid gap-3 rounded-sm border border-border bg-background p-3 md:grid-cols-[1fr_1.2fr_80px_120px_44px]">
-                  <Input placeholder="Service name" value={item.name} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, name: e.target.value } : s))} />
-                  <Input placeholder="Description" value={item.description} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, description: e.target.value } : s))} />
-                  <Input type="number" min="1" value={item.quantity} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, quantity: Number(e.target.value) } : s))} />
-                  <Input type="number" min="0" value={item.unitPrice} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, unitPrice: Number(e.target.value) } : s))} />
-                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => updateServices(draft.services.filter((_, i) => i !== index))}><Trash2 className="h-4 w-4" /></Button>
+                <div key={item.id} className="rounded-sm border border-border bg-background p-3">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-semibold">Service Row {index + 1}</p>
+                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => updateServices(draft.services.filter((_, i) => i !== index))} aria-label={`Remove service row ${index + 1}`}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-[1fr_1.2fr_90px_130px_130px]">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Service Name</label>
+                      <Input placeholder="Engine diagnostics" value={item.name} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, name: e.target.value } : s))} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Work Details</label>
+                      <Input placeholder="Electrical, engine, hydraulic work details" value={item.description} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, description: e.target.value } : s))} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Qty</label>
+                      <Input type="number" min="1" value={item.quantity} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, quantity: Number(e.target.value) } : s))} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Unit Price (INR)</label>
+                      <Input type="number" min="0" value={item.unitPrice} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, unitPrice: Number(e.target.value) } : s))} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Line Total</label>
+                      <div className="flex h-10 items-center rounded-sm border border-border bg-muted px-3 text-sm font-semibold text-primary">
+                        {formatCurrency(item.total)}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Input type="number" min="0" max="100" placeholder="Discount %" value={draft.totals.discountPercent} onChange={(e) => setDiscount(Number(e.target.value))} />
-              <Input type="number" min="0" max="28" placeholder="GST %" value={draft.totals.gstPercent} onChange={(e) => setGst(Number(e.target.value))} />
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Discount Percentage</label>
+                <Input type="number" min="0" max="100" placeholder="0 means no discount" value={draft.totals.discountPercent} onChange={(e) => setDiscount(Number(e.target.value))} />
+                <p className="text-xs text-muted-foreground">Discount is calculated before GST.</p>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">GST Percentage</label>
+                <Input type="number" min="0" max="28" placeholder="18 for standard service GST" value={draft.totals.gstPercent} onChange={(e) => setGst(Number(e.target.value))} />
+                <p className="text-xs text-muted-foreground">GST is applied after discount.</p>
+              </div>
             </div>
             <Button onClick={save} disabled={saving} className="w-full sm:w-auto">{saving ? "Saving..." : editingId ? "Update Invoice" : "Create Invoice"}</Button>
           </div>
