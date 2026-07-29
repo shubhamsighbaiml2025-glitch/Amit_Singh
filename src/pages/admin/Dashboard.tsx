@@ -5,16 +5,23 @@ import {
   useGallery,
   useSiteContent,
 } from "@/hooks/use-firestore";
+import { useInvoices } from "@/hooks/use-invoices";
+import { formatCurrency } from "@/lib/invoice-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { MessageSquare, Image as ImageIcon, FileText, Upload } from "lucide-react";
+import { MessageSquare, Image as ImageIcon, FileText, Upload, ReceiptText, IndianRupee } from "lucide-react";
 import { Link } from "wouter";
 
 export default function AdminDashboard() {
   const { enquiries, loading: enqLoading } = useEnquiries();
   const { images, loading: galLoading } = useGallery();
   const { content, loading: contentLoading } = useSiteContent();
+  const { invoices, loading: invoiceLoading } = useInvoices();
+  const paidRevenue = invoices
+    .filter((invoice) => invoice.status === "Paid")
+    .reduce((sum, invoice) => sum + invoice.totals.roundedTotal, 0);
+  const pendingInvoices = invoices.filter((invoice) => ["Pending", "Partial", "Overdue"].includes(invoice.status)).length;
   const needsInitialPhotos =
     !contentLoading &&
     (!content?.heroImageUrl ||
@@ -50,6 +57,44 @@ export default function AdminDashboard() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Link href="/admin/invoices">
+            <Card className="hover:border-primary transition-colors cursor-pointer bg-card">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total Revenue
+                </CardTitle>
+                <IndianRupee className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-primary">
+                  {invoiceLoading ? "..." : formatCurrency(paidRevenue)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Paid invoice value
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/admin/invoices">
+            <Card className="hover:border-primary transition-colors cursor-pointer bg-card">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Invoices
+                </CardTitle>
+                <ReceiptText className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-primary">
+                  {invoiceLoading ? "..." : invoices.length}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {pendingInvoices} pending or follow-up
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
           <Link href="/admin/enquiries">
             <Card className="hover:border-primary transition-colors cursor-pointer bg-card">
               <CardHeader className="flex flex-row items-center justify-between pb-2">

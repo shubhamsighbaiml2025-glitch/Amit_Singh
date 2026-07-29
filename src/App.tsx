@@ -16,6 +16,7 @@ import Contact from '@/pages/Contact';
 import Gallery from '@/pages/Gallery';
 import Videos from '@/pages/Videos';
 import Reviews from '@/pages/Reviews';
+import VerifyInvoice from '@/pages/VerifyInvoice';
 
 // Admin Pages
 import AdminLogin from '@/pages/admin/Login';
@@ -26,6 +27,7 @@ import AdminVideos from '@/pages/admin/Videos';
 import AdminEnquiries from '@/pages/admin/Enquiries';
 import AdminMail from '@/pages/admin/Mail';
 import AdminReviews from '@/pages/admin/Reviews';
+import AdminInvoices from '@/pages/admin/Invoices';
 
 import NotFound from '@/pages/not-found';
 
@@ -51,6 +53,7 @@ function Router() {
       <Route path="/gallery" component={Gallery} />
       <Route path="/videos" component={Videos} />
       <Route path="/reviews" component={Reviews} />
+      <Route path="/verify" component={VerifyInvoice} />
       
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin" component={AdminDashboard} />
@@ -60,6 +63,7 @@ function Router() {
       <Route path="/admin/enquiries" component={AdminEnquiries} />
       <Route path="/admin/reviews" component={AdminReviews} />
       <Route path="/admin/mail" component={AdminMail} />
+      <Route path="/admin/invoices" component={AdminInvoices} />
       
       <Route component={NotFound} />
     </Switch>
