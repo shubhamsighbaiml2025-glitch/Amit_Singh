@@ -15,6 +15,8 @@ import {
   renderReviewAdminEmail,
   renderReviewUserEmail,
 } from "../api/_templates.js";
+import { sendInvoiceEmailHandler } from "../api/send-invoice.js";
+import { generateInvoicePdfResponse } from "../api/invoice-pdf.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
@@ -202,6 +204,10 @@ app.post("/api/admin-send-mail", async (req, res) => {
     res.status(500).json({ error: "Failed to send email." });
   }
 });
+
+app.post("/api/send-invoice", (req, res) => sendInvoiceEmailHandler(req, res));
+
+app.get("/api/invoice-pdf", (req, res) => generateInvoicePdfResponse(req, res));
 
 app.listen(port, () => {
   console.log(`SMTP API running on http://localhost:${port}`);

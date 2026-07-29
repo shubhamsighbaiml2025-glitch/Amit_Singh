@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Copy, Download, Edit, Eye, Mail, Plus, Printer, Search, Send, Trash2 } from "lucide-react";
+import { Copy, Download, Edit, ExternalLink, Eye, Mail, Plus, Printer, Search, Send, Trash2 } from "lucide-react";
 import { useInvoices, useInvoiceActions } from "@/hooks/use-invoices";
 import {
   DEFAULT_COMPANY,
@@ -124,6 +124,26 @@ export default function AdminInvoices() {
   const printInvoice = (invoice: Invoice) => {
     setSelected(invoice);
     setTimeout(() => window.print(), 100);
+  };
+
+  const downloadPdf = async (invoice: Invoice) => {
+    try {
+      const response = await fetch(`/api/invoice-pdf?token=${encodeURIComponent(invoice.verificationToken)}`);
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error || "PDF generation failed");
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${invoice.invoiceNumber}.pdf`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to download PDF");
+    }
   };
 
   const sendEmail = async (invoice: Invoice) => {
@@ -282,7 +302,8 @@ export default function AdminInvoices() {
                         <Mail className={`h-4 w-4 ${sendingId === invoice.id ? "animate-pulse" : ""}`} />
                       </Button>
                       <Button size="icon" variant="ghost" onClick={() => sendWhatsApp(invoice)}><Send className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" onClick={() => window.open(verificationUrl(invoice.verificationToken), "_blank")}><Download className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" onClick={() => downloadPdf(invoice)} title="Download PDF"><Download className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" onClick={() => window.open(verificationUrl(invoice.verificationToken), "_blank")} title="Open verify page"><ExternalLink className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" className="text-destructive" onClick={async () => { await actions.remove(invoice.id); toast.success("Invoice deleted"); }}><Trash2 className="h-4 w-4" /></Button>
                     </td>
                   </tr>
@@ -296,7 +317,8 @@ export default function AdminInvoices() {
           <div className="fixed inset-0 z-50 overflow-y-auto bg-background/90 p-4 print:static print:bg-white print:p-0">
             <div className="mx-auto max-w-5xl print:max-w-none">
               <div className="mb-4 flex justify-end gap-2 print:hidden">
-                <Button onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" />Print / Save PDF</Button>
+                <Button onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" />Print</Button>
+                <Button variant="outline" onClick={() => downloadPdf(selected)}><Download className="mr-2 h-4 w-4" />Download PDF</Button>
                 <Button variant="outline" onClick={() => setSelected(null)}>Close</Button>
               </div>
               <InvoiceDocument invoice={selected} />

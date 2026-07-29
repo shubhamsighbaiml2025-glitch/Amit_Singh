@@ -1,101 +1,185 @@
 import type { Invoice } from "@/lib/invoice-utils";
-import { formatCurrency, formatDate, qrImageUrl, verificationUrl } from "@/lib/invoice-utils";
+import { formatCurrency, formatDate, statusStyles, verificationUrl } from "@/lib/invoice-utils";
+import { InvoiceQrCode } from "@/components/InvoiceQrCode";
 
 export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
+  const verifyLink = verificationUrl(invoice.verificationToken);
+
   return (
-    <div className="bg-white text-slate-950 p-6 sm:p-8 rounded-sm border border-border print:border-0 print:rounded-none print:p-0">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between border-b border-slate-200 pb-6">
-        <div className="flex gap-4">
-          <img src={invoice.company.logoUrl || "/sa-logo.svg"} alt={invoice.company.name} className="h-16 w-16 object-contain" />
-          <div>
-            <h2 className="text-2xl font-bold">{invoice.company.name}</h2>
-            <p className="text-sm text-slate-600 max-w-md">{invoice.company.address}</p>
-            <p className="text-sm text-slate-600">{invoice.company.phone} | {invoice.company.email}</p>
-            {invoice.company.gstNumber ? <p className="text-sm text-slate-600">GST: {invoice.company.gstNumber}</p> : null}
+    <article className="invoice-document mx-auto max-w-[820px] bg-white text-slate-950 shadow-sm print:max-w-none print:shadow-none">
+      {/* Accent header bar */}
+      <div className="h-1.5 bg-[#f5b800] print:bg-[#f5b800]" />
+
+      <div className="border border-slate-200 p-6 sm:p-8 print:border-0 print:p-0">
+        {/* Header */}
+        <header className="flex flex-col gap-6 border-b border-slate-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex gap-4">
+            <img
+              src={invoice.company.logoUrl || "/sa-logo.svg"}
+              alt={invoice.company.name}
+              className="h-16 w-16 shrink-0 object-contain"
+            />
+            <div>
+              <h2 className="text-xl font-bold tracking-tight sm:text-2xl">{invoice.company.name}</h2>
+              <p className="mt-1 max-w-md text-sm leading-relaxed text-slate-600">{invoice.company.address}</p>
+              <p className="mt-1 text-sm text-slate-600">
+                {invoice.company.phone} · {invoice.company.email}
+              </p>
+              {invoice.company.gstNumber ? (
+                <p className="text-sm text-slate-600">GSTIN: {invoice.company.gstNumber}</p>
+              ) : null}
+            </div>
           </div>
-        </div>
-        <div className="text-left sm:text-right">
-          <div className="text-3xl font-bold tracking-tight">INVOICE</div>
-          <div className="font-mono text-sm text-slate-600">{invoice.invoiceNumber}</div>
-          <div className="mt-2 inline-flex rounded-sm bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">{invoice.status}</div>
-        </div>
-      </div>
 
-      <div className="grid gap-6 sm:grid-cols-3 py-6 border-b border-slate-200">
-        <div className="sm:col-span-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Bill To</p>
-          <h3 className="mt-2 text-xl font-bold">{invoice.customer.companyName || invoice.customer.name}</h3>
-          {invoice.customer.companyName ? <p className="text-sm text-slate-700">{invoice.customer.name}</p> : null}
-          <p className="text-sm text-slate-700">{invoice.customer.phone} | {invoice.customer.email}</p>
-          <p className="text-sm text-slate-700">{invoice.customer.address}</p>
-          {invoice.customer.gstNumber ? <p className="text-sm text-slate-700">GST: {invoice.customer.gstNumber}</p> : null}
-        </div>
-        <div className="space-y-1 text-sm">
-          <div className="flex justify-between gap-4"><span className="text-slate-500">Invoice Date</span><strong>{formatDate(invoice.invoiceDate)}</strong></div>
-          <div className="flex justify-between gap-4"><span className="text-slate-500">Due Date</span><strong>{formatDate(invoice.dueDate)}</strong></div>
-          <div className="flex justify-between gap-4"><span className="text-slate-500">Verify</span><strong>QR / Token</strong></div>
-        </div>
-      </div>
+          <div className="text-left sm:text-right">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Tax Invoice</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">INVOICE</p>
+            <p className="mt-1 font-mono text-sm text-slate-600">{invoice.invoiceNumber}</p>
+            <span className={`mt-3 inline-flex rounded-sm border px-3 py-1 text-xs font-bold uppercase tracking-wide ${statusStyles(invoice.status)}`}>
+              {invoice.status}
+            </span>
+          </div>
+        </header>
 
-      <div className="overflow-x-auto py-6">
-        <table className="w-full min-w-[680px] text-sm">
-          <thead>
-            <tr className="bg-slate-950 text-white">
-              <th className="p-3 text-left">Service</th>
-              <th className="p-3 text-left">Description</th>
-              <th className="p-3 text-right">Qty</th>
-              <th className="p-3 text-right">Unit Price</th>
-              <th className="p-3 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoice.services.map((item) => (
-              <tr key={item.id} className="border-b border-slate-200">
-                <td className="p-3 font-semibold">{item.name}</td>
-                <td className="p-3 text-slate-600">{item.description}</td>
-                <td className="p-3 text-right">{item.quantity}</td>
-                <td className="p-3 text-right">{formatCurrency(item.unitPrice)}</td>
-                <td className="p-3 text-right font-semibold">{formatCurrency(item.total)}</td>
+        {/* Bill To + Dates */}
+        <section className="grid gap-6 border-b border-slate-200 py-6 sm:grid-cols-3">
+          <div className="sm:col-span-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Bill To</p>
+            <h3 className="mt-2 text-lg font-bold sm:text-xl">
+              {invoice.customer.companyName || invoice.customer.name}
+            </h3>
+            {invoice.customer.companyName ? (
+              <p className="text-sm text-slate-700">{invoice.customer.name}</p>
+            ) : null}
+            <p className="mt-1 text-sm text-slate-700">
+              {invoice.customer.phone} · {invoice.customer.email}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-slate-700">{invoice.customer.address}</p>
+            {invoice.customer.gstNumber ? (
+              <p className="mt-1 text-sm text-slate-700">GSTIN: {invoice.customer.gstNumber}</p>
+            ) : null}
+          </div>
+
+          <div className="rounded-sm border border-slate-200 bg-slate-50 p-4 text-sm print:bg-white">
+            <dl className="space-y-2">
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate-500">Invoice Date</dt>
+                <dd className="font-semibold">{formatDate(invoice.invoiceDate)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate-500">Due Date</dt>
+                <dd className="font-semibold">{formatDate(invoice.dueDate)}</dd>
+              </div>
+              <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
+                <dt className="text-slate-500">Amount Due</dt>
+                <dd className="font-bold text-slate-950">{formatCurrency(invoice.totals.roundedTotal)}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        {/* Services table */}
+        <section className="overflow-x-auto py-6">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="bg-slate-950 text-white">
+                <th className="p-3 text-left font-semibold">#</th>
+                <th className="p-3 text-left font-semibold">Service</th>
+                <th className="p-3 text-left font-semibold">Description</th>
+                <th className="p-3 text-right font-semibold">Qty</th>
+                <th className="p-3 text-right font-semibold">Rate</th>
+                <th className="p-3 text-right font-semibold">Amount</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {invoice.services.map((item, index) => (
+                <tr key={item.id} className="border-b border-slate-200">
+                  <td className="p-3 text-slate-500">{index + 1}</td>
+                  <td className="p-3 font-semibold">{item.name}</td>
+                  <td className="p-3 text-slate-600">{item.description}</td>
+                  <td className="p-3 text-right">{item.quantity}</td>
+                  <td className="p-3 text-right">{formatCurrency(item.unitPrice)}</td>
+                  <td className="p-3 text-right font-semibold">{formatCurrency(item.total)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
 
-      <div className="grid gap-8 sm:grid-cols-2 border-t border-slate-200 pt-6">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Terms & Conditions</p>
-          <ol className="mt-3 list-decimal space-y-1 pl-4 text-xs leading-relaxed text-slate-600">
-            {invoice.terms.map((term) => <li key={term}>{term}</li>)}
-          </ol>
-        </div>
-        <div>
-          <div className="ml-auto max-w-sm space-y-2 text-sm">
-            <div className="flex justify-between"><span>Subtotal</span><strong>{formatCurrency(invoice.totals.subtotal)}</strong></div>
-            <div className="flex justify-between"><span>Discount ({invoice.totals.discountPercent}%)</span><strong>- {formatCurrency(invoice.totals.discountAmount)}</strong></div>
-            <div className="flex justify-between"><span>GST ({invoice.totals.gstPercent}%)</span><strong>{formatCurrency(invoice.totals.gstAmount)}</strong></div>
-            <div className="flex justify-between"><span>Round Off</span><strong>{formatCurrency(invoice.totals.roundOff)}</strong></div>
-            <div className="flex justify-between border-t border-slate-300 pt-3 text-xl"><span>Grand Total</span><strong>{formatCurrency(invoice.totals.roundedTotal)}</strong></div>
-            <p className="text-xs capitalize text-slate-600">{invoice.totals.amountInWords}</p>
+        {/* Totals + Terms */}
+        <section className="grid gap-8 border-t border-slate-200 pt-6 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Terms & Conditions</p>
+            <ol className="mt-3 list-decimal space-y-1.5 pl-4 text-xs leading-relaxed text-slate-600">
+              {invoice.terms.map((term) => (
+                <li key={term}>{term}</li>
+              ))}
+            </ol>
           </div>
-        </div>
-      </div>
 
-      <div className="mt-8 grid gap-6 sm:grid-cols-2 sm:items-end">
-        <div className="flex items-center gap-4">
-          <img src={qrImageUrl(invoice.verificationToken)} alt="Invoice verification QR code" className="h-28 w-28" />
-          <div className="text-xs text-slate-600">
-            <p className="font-bold text-slate-950">Secure Verification</p>
-            <p className="break-all">{verificationUrl(invoice.verificationToken)}</p>
+          <div className="ml-auto w-full max-w-sm">
+            <div className="space-y-2 rounded-sm border border-slate-200 bg-slate-50 p-4 text-sm print:bg-white">
+              <div className="flex justify-between">
+                <span className="text-slate-600">Subtotal</span>
+                <strong>{formatCurrency(invoice.totals.subtotal)}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Discount ({invoice.totals.discountPercent}%)</span>
+                <strong>- {formatCurrency(invoice.totals.discountAmount)}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">GST ({invoice.totals.gstPercent}%)</span>
+                <strong>{formatCurrency(invoice.totals.gstAmount)}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Round Off</span>
+                <strong>{formatCurrency(invoice.totals.roundOff)}</strong>
+              </div>
+              <div className="flex justify-between border-t border-slate-300 pt-3 text-lg font-bold">
+                <span>Grand Total</span>
+                <span className="text-slate-950">{formatCurrency(invoice.totals.roundedTotal)}</span>
+              </div>
+              <p className="border-t border-slate-200 pt-2 text-xs capitalize text-slate-600">
+                {invoice.totals.amountInWords}
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="text-right">
-          {invoice.company.signatureUrl ? (
-            <img src={invoice.company.signatureUrl} alt="Authorized signature" className="ml-auto h-16 max-w-48 object-contain" />
-          ) : <div className="ml-auto h-16" />}
-          <div className="mt-2 border-t border-slate-400 pt-2 text-sm font-bold">Authorized Signature</div>
-        </div>
+        </section>
+
+        {/* QR Verification + Signature */}
+        <footer className="mt-8 grid gap-6 border-t border-slate-200 pt-6 sm:grid-cols-2 sm:items-end">
+          <div className="rounded-sm border border-slate-200 bg-slate-50 p-4 print:bg-white">
+            <div className="flex items-start gap-4">
+              <InvoiceQrCode token={invoice.verificationToken} />
+              <div className="min-w-0 text-xs text-slate-600">
+                <p className="text-sm font-bold text-slate-950">Scan to Verify Invoice</p>
+                <p className="mt-1 leading-relaxed">
+                  Anyone can scan this QR code with a phone camera to open the official verification page and confirm this invoice is authentic.
+                </p>
+                <p className="mt-2 break-all font-mono text-[10px] text-slate-500">{verifyLink}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-right">
+            {invoice.company.signatureUrl ? (
+              <img
+                src={invoice.company.signatureUrl}
+                alt="Authorized signature"
+                className="ml-auto h-16 max-w-48 object-contain"
+              />
+            ) : (
+              <div className="ml-auto h-16" />
+            )}
+            <div className="mt-2 border-t border-slate-400 pt-2 text-sm font-bold">Authorized Signature</div>
+            <p className="mt-1 text-xs text-slate-500">{invoice.company.name}</p>
+          </div>
+        </footer>
+
+        <p className="mt-6 text-center text-[10px] text-slate-400 print:mt-4">
+          This is a computer-generated invoice. Scan the QR code above to verify authenticity online.
+        </p>
       </div>
-    </div>
+    </article>
   );
 }

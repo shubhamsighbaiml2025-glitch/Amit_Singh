@@ -2,35 +2,76 @@ import { Layout } from "@/components/Layout";
 import { InvoiceDocument } from "@/components/InvoiceDocument";
 import { useInvoiceByToken } from "@/hooks/use-invoices";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, Loader2, Printer } from "lucide-react";
+import { AlertCircle, CheckCircle2, Download, Loader2, Printer } from "lucide-react";
+import { toast } from "sonner";
+
+async function downloadInvoicePdf(token: string, invoiceNumber: string) {
+  const response = await fetch(`/api/invoice-pdf?token=${encodeURIComponent(token)}`);
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error || "PDF generation failed");
+  }
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${invoiceNumber}.pdf`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function VerifyInvoice() {
   const token = new URLSearchParams(window.location.search).get("token") || "";
   const { invoice, loading, error } = useInvoiceByToken(token);
 
+  const handleDownloadPdf = async () => {
+    if (!invoice) return;
+    try {
+      await downloadInvoicePdf(invoice.verificationToken, invoice.invoiceNumber);
+      toast.success("PDF downloaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to download PDF");
+    }
+  };
+
   return (
     <Layout>
-      <div className="bg-card border-b border-border pt-32 pb-12">
+      <div className="print:hidden bg-card border-b border-border pt-32 pb-12">
         <div className="container mx-auto px-4 md:px-6">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">Invoice Verification</h1>
-          <p className="text-muted-foreground max-w-2xl">Secure invoice verification for Singh Automobiles Engine Engineering customers.</p>
+          <p className="text-muted-foreground max-w-2xl">
+            Scan the QR code on your invoice or open this secure link to verify authenticity.
+          </p>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 md:px-6 py-12">
+      <div className="container mx-auto px-4 md:px-6 py-12 print:max-w-none print:p-0">
         {loading ? (
-          <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         ) : invoice ? (
-          <div className="space-y-6">
-            <div className="flex flex-col gap-3 rounded-sm border border-emerald-500/30 bg-emerald-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-6 print:space-y-0">
+            <div className="print:hidden flex flex-col gap-3 rounded-sm border border-emerald-500/30 bg-emerald-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-6 w-6 text-emerald-500" />
                 <div>
                   <h2 className="font-bold text-emerald-500">Verified Invoice</h2>
-                  <p className="text-sm text-muted-foreground">{invoice.invoiceNumber} is a valid Singh Automobiles invoice.</p>
+                  <p className="text-sm text-muted-foreground">
+                    {invoice.invoiceNumber} is a valid Singh Automobiles invoice.
+                  </p>
                 </div>
               </div>
-              <Button onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" />Print / Save PDF</Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => window.print()}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Print
+                </Button>
+                <Button variant="outline" onClick={handleDownloadPdf}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </Button>
+              </div>
             </div>
             <InvoiceDocument invoice={invoice} />
           </div>

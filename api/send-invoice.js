@@ -2,6 +2,7 @@ import { assertSmtpConfigured, createTransporter, allowOnlyPost, appendCredit } 
 import { getAdminDb } from "./_firebase-admin.js";
 import { renderBrandedEmail } from "./_branded-email.js";
 import { generateInvoicePdf } from "./_invoice-pdf.js";
+import { appOrigin, buildVerifyUrl } from "./_invoice-shared.js";
 
 function formatCurrency(value = 0) {
   return new Intl.NumberFormat("en-IN", {
@@ -11,11 +12,7 @@ function formatCurrency(value = 0) {
   }).format(Number(value || 0));
 }
 
-function appOrigin(req) {
-  return process.env.PUBLIC_SITE_URL || process.env.VITE_PUBLIC_SITE_URL || `https://${req.headers.host}`;
-}
-
-export default async function handler(req, res) {
+export async function sendInvoiceEmailHandler(req, res) {
   if (!allowOnlyPost(req, res) || !assertSmtpConfigured(res)) return;
 
   const { invoiceId } = req.body || {};
@@ -40,7 +37,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const verifyUrl = `${appOrigin(req).replace(/\/$/, "")}/verify?token=${encodeURIComponent(invoice.verificationToken)}`;
+    const verifyUrl = buildVerifyUrl(appOrigin(req), invoice.verificationToken);
     const pdf = generateInvoicePdf(invoice, verifyUrl);
     const subject = `Invoice ${invoice.invoiceNumber} - Singh Automobiles`;
     const message = [
@@ -111,3 +108,5 @@ export default async function handler(req, res) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to send invoice email." });
   }
 }
+
+export default sendInvoiceEmailHandler;
