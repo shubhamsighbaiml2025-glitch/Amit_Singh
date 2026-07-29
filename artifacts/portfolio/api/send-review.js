@@ -63,7 +63,7 @@ export default async function handler(req, res) {
         from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
         to: cleanEmail,
         subject: "Thank you for reviewing Singh Automobiles",
-        text: appendCredit(`Hello ${cleanName},\n\nThank you for reviewing Singh Automobiles Engine Engineering. We truly appreciate your feedback.\n\nYour rating: ${cleanRating}/5\n\nRegards,\nSingh Automobiles`),
+        text: appendCredit(`Hello ${cleanName},\n\nThank you for reviewing Singh Automobiles. We truly appreciate your feedback.\n\nYour rating: ${cleanRating}/5\n\nRegards,\nSingh Automobiles`),
         html: renderReviewUserEmail({ name: cleanName, email: cleanEmail, rating: cleanRating, description: cleanDescription }),
       });
 

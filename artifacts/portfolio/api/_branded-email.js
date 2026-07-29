@@ -3,7 +3,6 @@ export const themes = {
     id: "precision",
     label: "Precision Gold",
     desc: "Industrial Dark & Amber Gold",
-    badge: "OFFICIAL COMMUNICATION",
     bg: "#07090E",
     panel: "#0F172A",
     panel2: "#131C31",
@@ -19,7 +18,6 @@ export const themes = {
     id: "performance",
     label: "Performance Red",
     desc: "High-Energy Crimson & Flame",
-    badge: "PERFORMANCE NOTICE",
     bg: "#0D0406",
     panel: "#1A0A0F",
     panel2: "#260E16",
@@ -35,7 +33,6 @@ export const themes = {
     id: "trust",
     label: "Electric Blue",
     desc: "Tech Diagnostics Sapphire & Cyan",
-    badge: "SERVICE CARE UPDATE",
     bg: "#040D1A",
     panel: "#0B192E",
     panel2: "#10233F",
@@ -51,7 +48,6 @@ export const themes = {
     id: "luxury",
     label: "Emerald Green",
     desc: "Premium Machinery Care & Emerald",
-    badge: "PREMIUM SERVICE MESSAGE",
     bg: "#03140E",
     panel: "#082119",
     panel2: "#0E3025",
@@ -98,7 +94,6 @@ export function renderStarRating(rating = 5, accentColor = "#F59E0B") {
 export function renderBrandedEmail({
   themeId = "precision",
   subject = "Singh Automobiles",
-  badgeText,
   introText,
   message = "",
   details = [],
@@ -109,7 +104,6 @@ export function renderBrandedEmail({
 }) {
   const t = getEmailTheme(themeId);
   const safeSubject = escHtml(subject || "Singh Automobiles Notification");
-  const safeBadge = escHtml(badgeText || t.badge);
   const safeIntro = introText ? escHtml(introText) : "";
 
   const paragraphs = String(message)
@@ -172,11 +166,6 @@ export function renderBrandedEmail({
           <!-- Header -->
           <tr>
             <td style="padding:32px 32px 24px 32px;background:${t.panel2};border-bottom:1px solid ${t.border};">
-              <div style="display:inline-block;padding:4px 12px;background:${t.accentGlow};border:1px solid ${t.border};border-radius:20px;margin-bottom:12px;">
-                <span style="color:${t.accent};font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">
-                  ${safeBadge}
-                </span>
-              </div>
               <h1 style="margin:0;color:#FFFFFF;font-size:22px;font-weight:700;letter-spacing:-0.3px;line-height:1.3;">
                 ${safeSubject}
               </h1>
@@ -195,7 +184,7 @@ export function renderBrandedEmail({
 
               <div style="margin-top:32px;padding-top:20px;border-top:1px solid ${t.border};">
                 <p style="margin:0 0 4px 0;font-size:14px;font-weight:700;color:#FFFFFF;">Warm Regards,</p>
-                <p style="margin:0;font-size:14px;font-weight:700;color:${t.accent};">Singh Automobiles Engine Engineering</p>
+                <p style="margin:0;font-size:14px;font-weight:700;color:${t.accent};">Singh Automobiles</p>
               </div>
             </td>
           </tr>
@@ -204,10 +193,10 @@ export function renderBrandedEmail({
           <tr>
             <td style="padding:24px 32px 28px 32px;background-color:${t.panel2};border-top:1px solid ${t.border};text-align:center;">
               <p style="margin:0 0 4px 0;font-size:12px;font-weight:800;color:#FFFFFF;letter-spacing:0.5px;">
-                SINGH AUTOMOBILES ENGINE ENGINEERING
+                SINGH AUTOMOBILES
               </p>
               <p style="margin:0 0 12px 0;font-size:11px;color:${t.muted};line-height:1.5;">
-                Engine Rebuilding &bull; Precision Diagnostics &bull; Heavy Performance Services
+                Heavy Machinery Service &bull; Precision Diagnostics &bull; Repair Support
               </p>
               <div style="padding-top:12px;border-top:1px solid ${t.border};">
                 <span style="font-size:10px;color:${t.muted};letter-spacing:1px;text-transform:uppercase;">

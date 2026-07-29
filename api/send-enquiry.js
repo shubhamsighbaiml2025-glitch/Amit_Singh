@@ -52,7 +52,7 @@ export default async function handler(req, res) {
         from: `"Singh Automobiles" <${process.env.SMTP_FROM_EMAIL}>`,
         to: email,
         subject: "We received your enquiry — Singh Automobiles",
-        text: appendCredit(`Hello ${name},\n\nThank you for reaching out to Singh Automobiles Engine Engineering. We will connect with you shortly.\n\nRegards,\nSingh Automobiles`),
+        text: appendCredit(`Hello ${name},\n\nThank you for reaching out to Singh Automobiles. We will connect with you shortly.\n\nRegards,\nSingh Automobiles`),
         html: renderEnquiryUserEmail({ name: String(name), email: String(email), phone: String(phone || ""), message: String(message) }),
       });
 

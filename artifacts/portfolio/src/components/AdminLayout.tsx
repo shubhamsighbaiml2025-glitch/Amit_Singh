@@ -12,7 +12,8 @@ import {
   LogOut,
   Wrench,
   Menu,
-  X
+  X,
+  ReceiptText
 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,6 +34,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: "/admin/enquiries", label: "Enquiries", icon: MessageSquare },
     { href: "/admin/reviews", label: "Reviews", icon: Star },
     { href: "/admin/mail", label: "Mail", icon: Send },
+    { href: "/admin/invoices", label: "Invoices", icon: ReceiptText },
   ];
 
   const SidebarContent = () => (

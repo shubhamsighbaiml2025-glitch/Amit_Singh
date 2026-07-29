@@ -16,7 +16,6 @@ export function renderEnquiryAdminEmail({ name, email, phone, message, submitted
   return renderBrandedEmail({
     themeId: "precision",
     subject: `New Enquiry from ${name}`,
-    badgeText: "WEBSITE ENQUIRY",
     introText: "A new customer enquiry has been submitted through the website.",
     message: message,
     details: [
@@ -37,8 +36,7 @@ export function renderEnquiryUserEmail({ name, email, phone, message }) {
   return renderBrandedEmail({
     themeId: "precision",
     subject: "We Received Your Enquiry",
-    badgeText: "CONFIRMATION RECEIPT",
-    introText: `Hello ${name}, thank you for contacting Singh Automobiles Engine Engineering.`,
+    introText: `Hello ${name}, thank you for contacting Singh Automobiles.`,
     message: `We have received your inquiry and our engineering team will get back to you shortly.\n\nSummary of your request:\n"${message}"\n\nIf you have an urgent inquiry regarding engine services, feel free to visit us or contact us directly.`,
   });
 }
@@ -50,7 +48,6 @@ export function renderReviewAdminEmail({ name, email, rating, description, submi
   return renderBrandedEmail({
     themeId: "performance",
     subject: `New ${rating}-Star Review from ${name}`,
-    badgeText: "CUSTOMER REVIEW RECEIVED",
     introText: "A new customer review has been posted on the website.",
     message: description,
     rating: rating,
@@ -71,8 +68,7 @@ export function renderReviewUserEmail({ name, email, rating, description }) {
   return renderBrandedEmail({
     themeId: "performance",
     subject: "Thank You For Your Review!",
-    badgeText: "FEEDBACK ACKNOWLEDGEMENT",
-    introText: `Dear ${name}, thank you for taking the time to leave a review for Singh Automobiles Engine Engineering.`,
+    introText: `Dear ${name}, thank you for taking the time to leave a review for Singh Automobiles.`,
     message: `Your feedback helps us maintain the highest standard of precision and service.\n\nYour submitted review:\n"${description}"\n\nWe look forward to serving you again!`,
     rating: rating,
   });
