@@ -95,6 +95,7 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
     doc.on("error", reject);
 
     const pageWidth = doc.page.width;
+    const pageHeight = doc.page.height;
     const contentWidth = pageWidth - 72;
     const left = 36;
     let cursorY = 56;
@@ -167,21 +168,35 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
     doc.font("Helvetica-Bold").fontSize(9).fillColor("#ffffff");
     columns.forEach((col) => doc.text(col.label, col.x, tableTop + 8, { width: col.w }));
 
+    const defaultRowHeight = 22;
+    const minPageBottom = pageHeight - 120;
     let rowY = tableTop + 32;
-    const rowHeight = 22;
+
+    const drawServiceTableHeader = () => {
+      doc.rect(left, 28, contentWidth, 24).fill("#0f172a");
+      doc.font("Helvetica-Bold").fontSize(9).fillColor("#ffffff");
+      columns.forEach((col) => doc.text(col.label, col.x, 36, { width: col.w }));
+      rowY = 64;
+    };
+
     invoice.services.forEach((item, index) => {
-      if (rowY + rowHeight > 560) {
+      doc.font("Helvetica").fontSize(9).fillColor("#0f172a");
+      const nameHeight = doc.heightOfString(item.name || "-", { width: columns[1].w });
+      const descHeight = doc.heightOfString(item.description || "", { width: columns[2].w, lineGap: 3 });
+      const qtyHeight = doc.heightOfString(String(item.quantity || 0), { width: columns[3].w, align: "right" });
+      const rateHeight = doc.heightOfString(formatCurrency(item.unitPrice), { width: columns[4].w, align: "right" });
+      const amountHeight = doc.heightOfString(formatCurrency(item.total), { width: columns[5].w, align: "right" });
+      const rowHeight = Math.max(defaultRowHeight, nameHeight, descHeight, qtyHeight, rateHeight, amountHeight) + 8;
+
+      if (rowY + rowHeight > minPageBottom) {
         doc.addPage();
-        rowY = 56;
-        doc.rect(left, rowY - 28, contentWidth, 24).fill("#0f172a");
-        doc.font("Helvetica-Bold").fontSize(9).fillColor("#ffffff");
-        columns.forEach((col) => doc.text(col.label, col.x, rowY - 20, { width: col.w }));
-        rowY += 28;
+        drawServiceTableHeader();
       }
+
       doc.font("Helvetica").fontSize(9).fillColor("#0f172a");
       doc.text(String(index + 1), columns[0].x, rowY, { width: columns[0].w });
       doc.font("Helvetica-Bold").text(item.name || "-", columns[1].x, rowY, { width: columns[1].w });
-      doc.font("Helvetica").fillColor("#475569").text(item.description || "", columns[2].x, rowY, { width: columns[2].w });
+      doc.font("Helvetica").fillColor("#475569").text(item.description || "", columns[2].x, rowY, { width: columns[2].w, lineGap: 3 });
       doc.fillColor("#0f172a").text(String(item.quantity || 0), columns[3].x, rowY, { width: columns[3].w, align: "right" });
       doc.text(formatCurrency(item.unitPrice), columns[4].x, rowY, { width: columns[4].w, align: "right" });
       doc.font("Helvetica-Bold").text(formatCurrency(item.total), columns[5].x, rowY, { width: columns[5].w, align: "right" });
@@ -189,7 +204,6 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       rowY += rowHeight;
     });
 
-    const pageHeight = doc.page.height;
     let summaryTop = Math.max(rowY + 24, 430);
     const estimatedTermsHeight = Math.max(invoice.terms.length * 16 + 40, 120);
     const summaryHeight = 122;
