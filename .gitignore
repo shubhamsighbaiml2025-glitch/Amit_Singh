@@ -1,5 +1,8 @@
 node_modules/
 dist/
+artifacts/
+temp/
+coverage/
 .env
 .env.*
 !.env.example
