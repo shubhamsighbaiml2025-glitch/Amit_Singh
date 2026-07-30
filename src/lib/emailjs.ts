@@ -23,7 +23,7 @@ emailjs.init(EMAILJS_PUBLIC_KEY);
 
 /**
  * Sends an enquiry:
- *  1. Notifies the admin (amitsingh6061.innet@gmail.com) with the enquiry details.
+ *  1. Notifies the admin (singhautomobiles.in@gmail.com) with the enquiry details.
  *  2. Sends an auto-reply to the user confirming receipt.
  */
 export async function sendEnquiryEmails(params: {
@@ -33,7 +33,7 @@ export async function sendEnquiryEmails(params: {
   message: string;
 }) {
   const adminParams = {
-    to_email: "amitsingh6061.innet@gmail.com",
+    to_email: "singhautomobiles.in@gmail.com",
     from_name: params.fromName,
     from_email: params.fromEmail,
     from_phone: params.fromPhone || "Not provided",

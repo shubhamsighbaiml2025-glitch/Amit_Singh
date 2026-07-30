@@ -24,7 +24,7 @@ dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
 
 const app = express();
 const port = Number(process.env.SMTP_API_PORT || 4174);
-const adminEmail = process.env.SMTP_TO_EMAIL || "amitsingh6061.innet@gmail.com";
+const adminEmail = process.env.SMTP_TO_EMAIL || "singhautomobiles.in@gmail.com";
 const mailCredit = "build by asrvtech.in";
 
 app.use(express.json({ limit: "15mb" }));

@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-export const adminEmail = process.env.SMTP_TO_EMAIL || "amitsingh6061.innet@gmail.com";
+export const adminEmail = process.env.SMTP_TO_EMAIL || "singhautomobiles.in@gmail.com";
 export const mailCredit = "build by asrvtech.in";
 
 const requiredSmtpFields = [

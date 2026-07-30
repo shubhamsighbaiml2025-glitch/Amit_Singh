@@ -38,10 +38,10 @@ function normalizeInvoice(invoice = {}) {
   return {
     ...invoice,
     company: {
-      name: "Singh Automobiles Engine Engineering",
+      name: "Singh Automobiles",
       address: "India",
-      phone: "+91 9905804791",
-      email: "amitsingh6061.innet@gmail.com",
+      phone: "+91 89876 89694",
+      email: "singhautomobiles.in@gmail.com",
       gstNumber: "",
       ...(invoice.company || {}),
     },
@@ -169,7 +169,10 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
     columns.forEach((col) => doc.text(col.label, col.x, tableTop + 8, { width: col.w }));
 
     const defaultRowHeight = 22;
-    const minPageBottom = pageHeight - 120;
+    // Reserve more space at the bottom so the QR code and signature
+    // remain on the same page when possible. If services grow large,
+    // rows will paginate to the next page as needed.
+    const minPageBottom = pageHeight - 240;
     let rowY = tableTop + 32;
 
     const drawServiceTableHeader = () => {
@@ -207,7 +210,8 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
     let summaryTop = Math.max(rowY + 24, 430);
     const estimatedTermsHeight = Math.max(invoice.terms.length * 16 + 40, 120);
     const summaryHeight = 122;
-    const minBottomSpace = 160;
+    // Minimum space required below the summary to accommodate the footer (QR + signature)
+    const minBottomSpace = 200;
     if (summaryTop + Math.max(summaryHeight, estimatedTermsHeight) + minBottomSpace > pageHeight - 36) {
       doc.addPage();
       summaryTop = 56;
@@ -248,12 +252,13 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       termY = doc.y + 6;
     });
 
-    const footerY = doc.page.height - 128;
+    const footerHeight = 128;
+    const footerY = doc.page.height - footerHeight;
     if (termY + 40 > footerY) {
       doc.addPage();
     }
 
-    const actualFooterY = doc.page.height - 128;
+    const actualFooterY = doc.page.height - footerHeight;
     doc.roundedRect(left, actualFooterY, 250, 92, 6).fillAndStroke("#f8fafc", "#e2e8f0");
     doc.image(qrBuffer, 44, actualFooterY + 8, { width: 72, height: 72 });
     doc.font("Helvetica-Bold").fontSize(9).fillColor("#0f172a")
@@ -278,8 +283,9 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       .font("Helvetica").fontSize(8).fillColor("#64748b")
       .text(invoice.company.name, signatureX, actualFooterY + 80, { width: 154, align: "right" });
 
+    const bottomNoteY = doc.page.height - 20;
     doc.font("Helvetica").fontSize(7).fillColor("#94a3b8")
-      .text("This is a computer-generated invoice. Scan the QR code to verify authenticity online.", left, 808, {
+      .text("This is a computer-generated invoice. Scan the QR code to verify authenticity online.", left, bottomNoteY - 6, {
         width: contentWidth,
         align: "center",
       });
