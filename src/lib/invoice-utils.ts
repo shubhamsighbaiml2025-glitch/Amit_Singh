@@ -87,9 +87,6 @@ export function normalizeInvoiceBranding(invoice: Invoice): Invoice {
     company: {
       ...DEFAULT_COMPANY,
       ...(invoice.company || {}),
-      name: DEFAULT_COMPANY.name,
-      phone: DEFAULT_COMPANY.phone,
-      email: DEFAULT_COMPANY.email,
     },
   };
 }

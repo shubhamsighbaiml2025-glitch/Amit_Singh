@@ -45,8 +45,8 @@ function normalizeInvoice(invoice = {}) {
     company: {
       address: "India",
       gstNumber: "",
-      ...(invoice.company || {}),
       ...DEFAULT_PDF_COMPANY,
+      ...(invoice.company || {}),
     },
     customer: invoice.customer || {},
     services: Array.isArray(invoice.services) ? invoice.services : [],

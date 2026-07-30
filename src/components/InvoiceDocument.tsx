@@ -1,12 +1,10 @@
 import type { Invoice } from "@/lib/invoice-utils";
-import { formatCurrency, formatDate, statusStyles } from "@/lib/invoice-utils";
+import { DEFAULT_COMPANY, formatCurrency, formatDate, statusStyles } from "@/lib/invoice-utils";
 
 export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
   const company = {
+    ...DEFAULT_COMPANY,
     ...(invoice.company || {}),
-    name: "Singh Automobiles",
-    phone: "+91 89876 89694",
-    email: "singhautomobiles.in@gmail.com",
   };
   const signatureSrc = company.signatureUrl || "/assets/authorized-signature.png";
   const showSignature = Boolean(signatureSrc && signatureSrc.trim());

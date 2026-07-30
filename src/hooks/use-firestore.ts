@@ -81,8 +81,8 @@ function normalizeSiteContent(content: Partial<SiteContent>): SiteContent {
   const merged = { ...DEFAULT_CONTENT, ...content };
   return {
     ...merged,
-    phone: DEFAULT_CONTENT.phone,
-    email: DEFAULT_CONTENT.email,
+    phone: merged.phone || DEFAULT_CONTENT.phone,
+    email: merged.email || DEFAULT_CONTENT.email,
     aboutText: String(merged.aboutText || DEFAULT_CONTENT.aboutText).replaceAll(
       "Singh Automobiles Engine Engineering",
       "Singh Automobiles",
