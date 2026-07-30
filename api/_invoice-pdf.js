@@ -169,10 +169,9 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
     columns.forEach((col) => doc.text(col.label, col.x, tableTop + 8, { width: col.w }));
 
     const defaultRowHeight = 22;
-    // Reserve more space at the bottom so the QR code and signature
-    // remain on the same page when possible. If services grow large,
-    // rows will paginate to the next page as needed.
-    const minPageBottom = pageHeight - 240;
+    // Reserve enough bottom space for the footer while allowing the
+    // service table to use more of the page when the invoice is short.
+    const minPageBottom = pageHeight - 200;
     let rowY = tableTop + 32;
 
     const drawServiceTableHeader = () => {
@@ -207,11 +206,11 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       rowY += rowHeight;
     });
 
-    let summaryTop = Math.max(rowY + 24, 430);
-    const estimatedTermsHeight = Math.max(invoice.terms.length * 16 + 40, 120);
-    const summaryHeight = 122;
-    // Minimum space required below the summary to accommodate the footer (QR + signature)
-    const minBottomSpace = 200;
+    let summaryTop = Math.max(rowY + 18, 420);
+    const estimatedTermsHeight = Math.max(invoice.terms.length * 14 + 30, 100);
+    const summaryHeight = 112;
+    // Keep summary+terms+footer on the same page if it still fits.
+    const minBottomSpace = 170;
     if (summaryTop + Math.max(summaryHeight, estimatedTermsHeight) + minBottomSpace > pageHeight - 36) {
       doc.addPage();
       summaryTop = 56;
@@ -252,9 +251,9 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       termY = doc.y + 6;
     });
 
-    const footerHeight = 128;
+    const footerHeight = 120;
     const footerY = doc.page.height - footerHeight;
-    if (termY + 40 > footerY) {
+    if (termY + 28 > footerY) {
       doc.addPage();
     }
 
