@@ -14,38 +14,47 @@ if (!source || !fs.existsSync(source)) {
 
 fs.mkdirSync(path.dirname(output), { recursive: true });
 
+const metadata = await sharp(source).metadata();
+const cropWidth = Math.round(metadata.width * 0.68);
+const cropHeight = Math.round(metadata.height * 0.5);
+const cropLeft = Math.round((metadata.width - cropWidth) / 2);
+const cropTop = Math.round(metadata.height * 0.24);
+
 const { data, info } = await sharp(source)
+  .extract({ left: cropLeft, top: cropTop, width: cropWidth, height: cropHeight })
   .rotate()
   .ensureAlpha()
   .raw()
   .toBuffer({ resolveWithObject: true });
 
-for (let i = 0; i < data.length; i += 4) {
-  const r = data[i];
-  const g = data[i + 1];
-  const b = data[i + 2];
-  const brightness = (r + g + b) / 3;
-  const purpleInk = b > r + 10 && b > g && brightness < 210;
-  const darkInk = brightness < 145;
+const threshold = 152;
+const outputData = Buffer.alloc(info.width * info.height * 4);
 
-  if (purpleInk || darkInk) {
-    data[i] = Math.min(255, Math.round(r * 0.55));
-    data[i + 1] = Math.min(255, Math.round(g * 0.35));
-    data[i + 2] = Math.min(255, Math.round(b * 0.95));
-    data[i + 3] = 255;
-  } else if (brightness > 170) {
-    data[i + 3] = 0;
-  } else {
-    data[i + 3] = Math.max(0, Math.min(255, Math.round((170 - brightness) * 4)));
+for (let i = 0, j = 0; i < data.length; i += 4, j += 4) {
+  const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+
+  if (gray >= threshold) {
+    outputData[j + 3] = 0;
+    continue;
   }
+
+  const strength = Math.min(1, (threshold - gray) / 95);
+  outputData[j] = 55;
+  outputData[j + 1] = 24;
+  outputData[j + 2] = 132;
+  outputData[j + 3] = Math.round(120 + strength * 135);
 }
 
-await sharp(data, {
+await sharp(outputData, {
   raw: { width: info.width, height: info.height, channels: 4 },
 })
   .trim({ threshold: 10 })
   .resize({ width: 420, withoutEnlargement: true })
   .png({ compressionLevel: 9 })
   .toFile(output);
+
+const apiOutput = path.resolve(__dirname, "../api/assets/authorized-signature.png");
+fs.mkdirSync(path.dirname(apiOutput), { recursive: true });
+fs.copyFileSync(output, apiOutput);
 
 console.log("Signature saved to", output);
