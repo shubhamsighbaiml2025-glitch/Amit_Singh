@@ -163,13 +163,21 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       { label: "Amount", x: 470, w: 80 },
     ];
 
-    doc.rect(left, tableTop, contentWidth, 22).fill("#0f172a");
+    doc.rect(left, tableTop, contentWidth, 24).fill("#0f172a");
     doc.font("Helvetica-Bold").fontSize(9).fillColor("#ffffff");
-    columns.forEach((col) => doc.text(col.label, col.x, tableTop + 7, { width: col.w }));
+    columns.forEach((col) => doc.text(col.label, col.x, tableTop + 8, { width: col.w }));
 
-    let rowY = tableTop + 28;
+    let rowY = tableTop + 32;
+    const rowHeight = 22;
     invoice.services.forEach((item, index) => {
-      if (rowY > 620) return;
+      if (rowY + rowHeight > 560) {
+        doc.addPage();
+        rowY = 56;
+        doc.rect(left, rowY - 28, contentWidth, 24).fill("#0f172a");
+        doc.font("Helvetica-Bold").fontSize(9).fillColor("#ffffff");
+        columns.forEach((col) => doc.text(col.label, col.x, rowY - 20, { width: col.w }));
+        rowY += 28;
+      }
       doc.font("Helvetica").fontSize(9).fillColor("#0f172a");
       doc.text(String(index + 1), columns[0].x, rowY, { width: columns[0].w });
       doc.font("Helvetica-Bold").text(item.name || "-", columns[1].x, rowY, { width: columns[1].w });
@@ -177,11 +185,20 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       doc.fillColor("#0f172a").text(String(item.quantity || 0), columns[3].x, rowY, { width: columns[3].w, align: "right" });
       doc.text(formatCurrency(item.unitPrice), columns[4].x, rowY, { width: columns[4].w, align: "right" });
       doc.font("Helvetica-Bold").text(formatCurrency(item.total), columns[5].x, rowY, { width: columns[5].w, align: "right" });
-      doc.moveTo(left, rowY + 14).lineTo(pageWidth - left, rowY + 14).strokeColor("#e2e8f0").stroke();
-      rowY += 18;
+      doc.strokeColor("#e2e8f0").lineWidth(0.5).moveTo(left, rowY + rowHeight - 6).lineTo(pageWidth - left, rowY + rowHeight - 6).stroke();
+      rowY += rowHeight;
     });
 
-    const summaryTop = Math.max(rowY + 10, 430);
+    const pageHeight = doc.page.height;
+    let summaryTop = Math.max(rowY + 24, 430);
+    const estimatedTermsHeight = Math.max(invoice.terms.length * 16 + 40, 120);
+    const summaryHeight = 122;
+    const minBottomSpace = 160;
+    if (summaryTop + Math.max(summaryHeight, estimatedTermsHeight) + minBottomSpace > pageHeight - 36) {
+      doc.addPage();
+      summaryTop = 56;
+    }
+
     const summaryX = pageWidth - 220;
     const summary = [
       ["Subtotal", formatCurrency(invoice.totals.subtotal)],
@@ -191,8 +208,9 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       ["Grand Total", formatCurrency(invoice.totals.roundedTotal)],
     ];
 
+    doc.roundedRect(summaryX - 12, summaryTop - 8, 200, summaryHeight, 6).fillAndStroke("#f8fafc", "#e2e8f0");
     summary.forEach(([label, value], index) => {
-      const y = summaryTop + index * 16;
+      const y = summaryTop + index * 18;
       doc.font(index === summary.length - 1 ? "Helvetica-Bold" : "Helvetica")
         .fontSize(index === summary.length - 1 ? 11 : 9)
         .fillColor("#0f172a")
@@ -201,42 +219,50 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
     });
 
     doc.font("Helvetica").fontSize(8).fillColor("#64748b")
-      .text(`Amount in words: ${invoice.totals.amountInWords || ""}`, left, summaryTop + 90, { width: 300 });
+      .text(`Amount in words: ${invoice.totals.amountInWords || ""}`, summaryX, summaryTop + 102, { width: 200, align: "right" });
 
+    const termsTop = summaryTop;
+    const termsBoxHeight = Math.max(estimatedTermsHeight, 140);
+    doc.roundedRect(left, termsTop, contentWidth - 220, termsBoxHeight, 6).fillAndStroke("#f8fafc", "#e2e8f0");
     doc.font("Helvetica-Bold").fontSize(10).fillColor("#0f172a")
-      .text("Terms & Conditions", left, summaryTop + 112, { width: 300 });
+      .text("Terms & Conditions", left + 12, termsTop + 12, { width: contentWidth - 240 });
 
-    let termY = summaryTop + 126;
-    invoice.terms.slice(0, 5).forEach((term, index) => {
-      doc.font("Helvetica").fontSize(7.5).fillColor("#475569")
-        .text(`${index + 1}. ${String(term).slice(0, 120)}`, 42, termY, { width: 300 });
-      termY += 12;
+    let termY = termsTop + 30;
+    invoice.terms.forEach((term, index) => {
+      doc.font("Helvetica").fontSize(8).fillColor("#475569");
+      doc.text(`${index + 1}. ${String(term)}`, left + 12, termY, { width: contentWidth - 240, lineGap: 3 });
+      termY = doc.y + 6;
     });
 
-    const footerY = 700;
-    doc.roundedRect(left, footerY, 250, 92, 4).fillAndStroke("#f8fafc", "#e2e8f0");
-    doc.image(qrBuffer, 44, footerY + 8, { width: 72, height: 72 });
+    const footerY = doc.page.height - 128;
+    if (termY + 40 > footerY) {
+      doc.addPage();
+    }
+
+    const actualFooterY = doc.page.height - 128;
+    doc.roundedRect(left, actualFooterY, 250, 92, 6).fillAndStroke("#f8fafc", "#e2e8f0");
+    doc.image(qrBuffer, 44, actualFooterY + 8, { width: 72, height: 72 });
     doc.font("Helvetica-Bold").fontSize(9).fillColor("#0f172a")
-      .text("Scan to Verify Invoice", 126, footerY + 14, { width: 150 })
+      .text("Scan to Verify Invoice", 126, actualFooterY + 14, { width: 150 })
       .font("Helvetica").fontSize(8).fillColor("#475569")
-      .text("Anyone can scan anytime to verify this invoice online. No expiry or view limit.", 126, footerY + 28, { width: 150 })
+      .text("Anyone can scan anytime to verify this invoice online. No expiry or view limit.", 126, actualFooterY + 28, { width: 150 })
       .fontSize(6.5).fillColor("#64748b")
-      .text(String(verifyUrl).slice(0, 70), 126, footerY + 58, { width: 150 });
+      .text(String(verifyUrl).slice(0, 70), 126, actualFooterY + 58, { width: 150 });
 
     const signatureX = pageWidth - 190;
     if (signaturePath) {
       try {
-        doc.image(signaturePath, signatureX, footerY + 4, { fit: [130, 52], align: "right" });
+        doc.image(signaturePath, signatureX, actualFooterY + 4, { fit: [130, 52], align: "right" });
       } catch (error) {
         console.warn("Invoice signature image could not be embedded:", error);
       }
     }
 
-    doc.moveTo(signatureX, footerY + 62).lineTo(pageWidth - left, footerY + 62).strokeColor("#94a3b8").stroke();
+    doc.moveTo(signatureX, actualFooterY + 62).lineTo(pageWidth - left, actualFooterY + 62).strokeColor("#94a3b8").stroke();
     doc.font("Helvetica-Bold").fontSize(9).fillColor("#0f172a")
-      .text("Authorized Signature", signatureX, footerY + 68, { width: 154, align: "right" })
+      .text("Authorized Signature", signatureX, actualFooterY + 68, { width: 154, align: "right" })
       .font("Helvetica").fontSize(8).fillColor("#64748b")
-      .text(invoice.company.name, signatureX, footerY + 80, { width: 154, align: "right" });
+      .text(invoice.company.name, signatureX, actualFooterY + 80, { width: 154, align: "right" });
 
     doc.font("Helvetica").fontSize(7).fillColor("#94a3b8")
       .text("This is a computer-generated invoice. Scan the QR code to verify authenticity online.", left, 808, {
