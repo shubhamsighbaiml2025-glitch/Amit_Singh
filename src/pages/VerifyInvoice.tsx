@@ -2,7 +2,7 @@ import { Layout } from "@/components/Layout";
 import { InvoiceDocument } from "@/components/InvoiceDocument";
 import { useInvoiceByToken } from "@/hooks/use-invoices";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Download, Loader2, Printer } from "lucide-react";
+import { AlertCircle, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf-client";
 
@@ -29,7 +29,7 @@ export default function VerifyInvoice() {
         <div className="container mx-auto px-4 md:px-6">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">Invoice</h1>
           <p className="text-muted-foreground max-w-2xl">
-            Open this page to view the bill, print it, or download the PDF directly.
+            Open this page to view the bill and download the PDF directly.
           </p>
         </div>
       </div>
@@ -45,14 +45,10 @@ export default function VerifyInvoice() {
               <div>
                 <h2 className="font-bold text-emerald-500">Invoice Ready</h2>
                 <p className="text-sm text-muted-foreground">
-                  {invoice.invoiceNumber} is ready to view, print, or download.
+                  {invoice.invoiceNumber} is ready to view or download.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => window.print()}>
-                  <Printer className="mr-2 h-4 w-4" />
-                  Print / Save PDF
-                </Button>
                 <Button variant="outline" onClick={handleDownloadPdf}>
                   <Download className="mr-2 h-4 w-4" />
                   Download PDF

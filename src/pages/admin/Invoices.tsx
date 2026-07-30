@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Copy, Download, Edit, ExternalLink, Eye, Mail, Plus, Printer, Search, Send, Trash2 } from "lucide-react";
+import { Copy, Download, Edit, ExternalLink, Eye, Mail, Plus, Search, Send, Trash2 } from "lucide-react";
 import { useInvoices, useInvoiceActions } from "@/hooks/use-invoices";
 import {
   DEFAULT_COMPANY,
@@ -119,14 +119,6 @@ export default function AdminInvoices() {
     setEditingId(null);
     setDraft({ ...rest, invoiceNumber: makeInvoiceNumber(invoices.length), verificationToken: createVerificationToken(), status: "Pending", invoiceDate: today(), dueDate: due() });
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const printInvoice = (invoice: Invoice) => {
-    setSelected(invoice);
-    setTimeout(() => {
-      window.print();
-      setSelected(null);
-    }, 250);
   };
 
   const downloadPdf = async (invoice: Invoice) => {
@@ -292,7 +284,6 @@ export default function AdminInvoices() {
                       <Button size="icon" variant="ghost" onClick={() => setSelected(invoice)}><Eye className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" onClick={() => edit(invoice)}><Edit className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" onClick={() => duplicate(invoice)}><Copy className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" onClick={() => printInvoice(invoice)}><Printer className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" disabled={sendingId === invoice.id} onClick={() => sendEmail(invoice)}>
                         <Mail className={`h-4 w-4 ${sendingId === invoice.id ? "animate-pulse" : ""}`} />
                       </Button>
@@ -312,8 +303,7 @@ export default function AdminInvoices() {
           <div className="fixed inset-0 z-50 overflow-y-auto bg-background/90 p-4 print:static print:bg-white print:p-0">
             <div className="mx-auto flex max-w-5xl flex-col print:max-w-none">
               <div className="mb-4 flex justify-end gap-2 print:hidden">
-                <Button onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" />Print</Button>
-                <Button variant="outline" onClick={() => downloadPdf(selected)}><Download className="mr-2 h-4 w-4" />Download PDF</Button>
+                  <Button variant="outline" onClick={() => downloadPdf(selected)}><Download className="mr-2 h-4 w-4" />Download PDF</Button>
                 <Button variant="outline" onClick={() => setSelected(null)}>Close</Button>
               </div>
               <div className="invoice-print-shell rounded-sm border border-border bg-white p-4 shadow-sm">

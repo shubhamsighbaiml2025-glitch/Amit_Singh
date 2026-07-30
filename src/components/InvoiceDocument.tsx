@@ -151,7 +151,7 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
           <div className="rounded-sm border border-slate-200 bg-slate-50 p-4 print:bg-white">
             <p className="text-sm font-bold text-slate-950">Invoice details</p>
             <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              This invoice is prepared for the listed service work and can be printed or downloaded directly from the billing section.
+              This invoice is prepared for the listed service work and can be downloaded directly from the billing section.
             </p>
           </div>
 

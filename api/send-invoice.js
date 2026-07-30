@@ -49,7 +49,7 @@ export async function sendInvoiceEmailHandler(req, res) {
       `Invoice Number: ${invoice.invoiceNumber}`,
       `Total Amount: ${formatCurrency(invoice.totals?.roundedTotal)}`,
       `Payment Status: ${invoice.status}`,
-      `You can verify this invoice anytime using this secure link: ${verifyUrl}`,
+      `This invoice has been generated and verified by Singh Automobiles. The attached PDF includes a QR code for anytime verification.`,
     ].join("\n\n");
 
     const html = renderBrandedEmail({
@@ -63,11 +63,8 @@ export async function sendInvoiceEmailHandler(req, res) {
         { label: "Phone", value: invoice.customer.phone },
         { label: "Status", value: invoice.status },
         { label: "Grand Total", value: formatCurrency(invoice.totals?.roundedTotal) },
-        { label: "Verification Link", value: verifyUrl, isLink: true, linkUrl: verifyUrl },
       ],
       attachmentsCount: 1,
-      ctaText: "Verify Invoice",
-      ctaUrl: verifyUrl,
     });
 
     const transporter = createTransporter();
@@ -81,6 +78,7 @@ export async function sendInvoiceEmailHandler(req, res) {
         filename: `${invoice.invoiceNumber}.pdf`,
         content: pdf,
         contentType: "application/pdf",
+        contentDisposition: "attachment",
       }],
     });
 
