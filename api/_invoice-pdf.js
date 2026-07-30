@@ -33,6 +33,12 @@ function formatDisplayDate(value) {
   }).format(date);
 }
 
+const DEFAULT_PDF_COMPANY = {
+  name: "Singh Automobiles",
+  phone: process.env.PDF_COMPANY_PHONE || "+91 89876 89694",
+  email: process.env.PDF_COMPANY_EMAIL || "singhautomobiles.in@gmail.com",
+};
+
 function normalizeInvoice(invoice = {}) {
   return {
     ...invoice,
@@ -40,9 +46,7 @@ function normalizeInvoice(invoice = {}) {
       address: "India",
       gstNumber: "",
       ...(invoice.company || {}),
-      name: "Singh Automobiles",
-      phone: "+91 89876 89694",
-      email: "singhautomobiles.in@gmail.com",
+      ...DEFAULT_PDF_COMPANY,
     },
     customer: invoice.customer || {},
     services: Array.isArray(invoice.services) ? invoice.services : [],
