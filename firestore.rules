@@ -1,0 +1,181 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Website text/photos content
+    // Public website can read.
+    // Only logged-in admin can edit.
+    match /content/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Gallery images
+    // Public website can read.
+    // Only logged-in admin can add/delete images.
+    match /gallery/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Contact form enquiries
+    // Anyone can submit enquiry from website.
+    // Only logged-in admin can view/delete enquiries.
+    match /enquiries/{docId} {
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'name',
+          'email',
+          'phone',
+          'message',
+          'submittedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.message is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.email.size() > 0
+        && request.resource.data.message.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.email.size() <= 150
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() <= 30
+        && request.resource.data.message.size() <= 3000;
+
+      allow read, update, delete: if isSignedIn();
+    }
+
+    // Customer Reviews
+    // Anyone can submit a review.
+    // Public can read reviews.
+    // Only logged-in admin can update or delete reviews.
+    match /reviews/{docId} {
+      allow read: if true;
+
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'name',
+          'email',
+          'rating',
+          'description',
+          'createdAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.description is string
+        && request.resource.data.rating is int
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.email.size() > 0
+        && request.resource.data.email.size() <= 150
+        && request.resource.data.description.size() > 0
+        && request.resource.data.description.size() <= 3000
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+
+      allow update, delete: if isSignedIn();
+    }
+
+    // Videos
+    // Public can read videos.
+    // Only authenticated admin can create, update, or delete videos.
+    match /videos/{docId} {
+      allow read: if true;
+
+      allow create: if
+        isSignedIn()
+        && request.resource.data.keys().hasOnly([
+          'title',
+          'url',
+          'createdAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.url is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.url.size() > 0
+        && request.resource.data.url.size() <= 2000;
+
+      allow update: if
+        isSignedIn()
+        && request.resource.data.keys().hasOnly([
+          'title',
+          'url',
+          'createdAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.url is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.url.size() > 0
+        && request.resource.data.url.size() <= 2000;
+
+      allow delete: if isSignedIn();
+    }
+
+    // Services
+    // Public can read services.
+    // Only authenticated admin can create, update, or delete services.
+    match /services/{docId} {
+      allow read: if true;
+
+      allow create: if
+        isSignedIn()
+        && request.resource.data.keys().hasOnly([
+          'title',
+          'description',
+          'image',
+          'createdAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.description is string
+        && request.resource.data.image is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.description.size() > 0
+        && request.resource.data.description.size() <= 5000
+        && request.resource.data.image.size() <= 2000;
+
+      allow update: if
+        isSignedIn()
+        && request.resource.data.keys().hasOnly([
+          'title',
+          'description',
+          'image',
+          'createdAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.description is string
+        && request.resource.data.image is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.description.size() > 0
+        && request.resource.data.description.size() <= 5000
+        && request.resource.data.image.size() <= 2000;
+
+      allow delete: if isSignedIn();
+    }
+
+    // Invoice access for QR scanning and public bill viewing.
+    match /invoices/{invoiceId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Uploaded assets used by the admin panel.
+    match /uploaded_assets/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Block everything else.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

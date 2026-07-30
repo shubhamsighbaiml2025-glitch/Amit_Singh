@@ -49,6 +49,8 @@ export function useInvoiceByToken(token?: string) {
   useEffect(() => {
     if (!token) {
       setLoading(false);
+      setInvoice(null);
+      setError("");
       return;
     }
 
@@ -57,9 +59,16 @@ export function useInvoiceByToken(token?: string) {
       setLoading(true);
       setError("");
       try {
-        const q = query(collection(db, COLLECTION), where("verificationToken", "==", token));
-        const snap = await getDocs(q);
-        if (alive) setInvoice(snap.empty ? null : ({ id: snap.docs[0].id, ...snap.docs[0].data() } as Invoice));
+        const response = await fetch(`/api/invoice?token=${encodeURIComponent(token)}`);
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(payload?.error || "Unable to verify invoice");
+        }
+
+        if (alive) {
+          setInvoice(payload?.invoice as Invoice | null);
+        }
       } catch (err) {
         if (alive) setError(err instanceof Error ? err.message : "Unable to verify invoice");
       } finally {

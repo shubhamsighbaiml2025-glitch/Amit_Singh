@@ -2,7 +2,7 @@ import { Layout } from "@/components/Layout";
 import { InvoiceDocument } from "@/components/InvoiceDocument";
 import { useInvoiceByToken } from "@/hooks/use-invoices";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, Download, Loader2, Printer } from "lucide-react";
+import { AlertCircle, Download, Loader2, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf-client";
 
@@ -27,9 +27,9 @@ export default function VerifyInvoice() {
     <Layout>
       <div className="print:hidden bg-card border-b border-border pt-32 pb-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">Invoice Verification</h1>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">Invoice</h1>
           <p className="text-muted-foreground max-w-2xl">
-            Scan the QR code on your invoice or open this secure link to verify authenticity anytime. No expiry or view limit.
+            Open this page to view the bill, print it, or download the PDF directly.
           </p>
         </div>
       </div>
@@ -42,19 +42,16 @@ export default function VerifyInvoice() {
         ) : invoice ? (
           <div className="space-y-6 print:space-y-0">
             <div className="print:hidden flex flex-col gap-3 rounded-sm border border-emerald-500/30 bg-emerald-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-                <div>
-                  <h2 className="font-bold text-emerald-500">Verified Invoice</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {invoice.invoiceNumber} is a valid Singh Automobiles invoice. You can view it anytime.
-                  </p>
-                </div>
+              <div>
+                <h2 className="font-bold text-emerald-500">Invoice Ready</h2>
+                <p className="text-sm text-muted-foreground">
+                  {invoice.invoiceNumber} is ready to view, print, or download.
+                </p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => window.print()}>
                   <Printer className="mr-2 h-4 w-4" />
-                  Print
+                  Print / Save PDF
                 </Button>
                 <Button variant="outline" onClick={handleDownloadPdf}>
                   <Download className="mr-2 h-4 w-4" />
@@ -67,8 +64,8 @@ export default function VerifyInvoice() {
         ) : (
           <div className="rounded-sm border border-destructive/40 bg-destructive/10 p-8 text-center">
             <AlertCircle className="mx-auto mb-4 h-12 w-12 text-destructive" />
-            <h2 className="text-2xl font-bold text-destructive">Invalid Invoice</h2>
-            <p className="mt-2 text-muted-foreground">{error || "No invoice was found for this verification token."}</p>
+            <h2 className="text-2xl font-bold text-destructive">Invoice Not Found</h2>
+            <p className="mt-2 text-muted-foreground">{error || "No invoice was found for this link."}</p>
           </div>
         )}
       </div>

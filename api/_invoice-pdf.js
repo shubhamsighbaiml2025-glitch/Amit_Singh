@@ -54,7 +54,13 @@ function normalizeInvoice(invoice = {}) {
 }
 
 function resolveSignaturePath() {
-  return signatureCandidates.find((candidate) => fs.existsSync(candidate)) || null;
+  const candidate = signatureCandidates.find((entry) => fs.existsSync(entry));
+  if (candidate) {
+    return candidate;
+  }
+
+  const fallback = path.resolve(process.cwd(), "public/assets/authorized-signature.png");
+  return fs.existsSync(fallback) ? fallback : null;
 }
 
 function writeLabelValue(doc, label, value, x, y, width = 170) {
@@ -219,7 +225,11 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
 
     const signatureX = pageWidth - 190;
     if (signaturePath) {
-      doc.image(signaturePath, signatureX, footerY + 4, { fit: [130, 52], align: "right" });
+      try {
+        doc.image(signaturePath, signatureX, footerY + 4, { fit: [130, 52], align: "right" });
+      } catch (error) {
+        console.warn("Invoice signature image could not be embedded:", error);
+      }
     }
 
     doc.moveTo(signatureX, footerY + 62).lineTo(pageWidth - left, footerY + 62).strokeColor("#94a3b8").stroke();

@@ -176,14 +176,6 @@ export function makeInvoiceNumber(existingCount: number) {
   return `INV-${stamp}-${String(existingCount + 1).padStart(3, "0")}`;
 }
 
-export const PUBLIC_SITE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_PUBLIC_SITE_URL) ||
-  (typeof window !== "undefined" ? window.location.origin : "https://amit-singh-sepia.vercel.app");
-
-export function verificationUrl(token: string, origin = PUBLIC_SITE_URL) {
-  return `${origin.replace(/\/$/, "")}/verify?token=${encodeURIComponent(token)}`;
-}
-
 export function statusStyles(status: InvoiceStatus) {
   switch (status) {
     case "Paid":

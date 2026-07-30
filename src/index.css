@@ -154,5 +154,17 @@
   .invoice-document {
     box-shadow: none !important;
     border: none !important;
+    break-inside: avoid;
+  }
+
+  .invoice-document img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .invoice-print-shell {
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
   }
 }

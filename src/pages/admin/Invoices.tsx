@@ -19,7 +19,6 @@ import {
   formatCurrency,
   makeInvoiceNumber,
   makeService,
-  verificationUrl,
 } from "@/lib/invoice-utils";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf-client";
 
@@ -124,7 +123,10 @@ export default function AdminInvoices() {
 
   const printInvoice = (invoice: Invoice) => {
     setSelected(invoice);
-    setTimeout(() => window.print(), 100);
+    setTimeout(() => {
+      window.print();
+      setSelected(null);
+    }, 250);
   };
 
   const downloadPdf = async (invoice: Invoice) => {
@@ -160,7 +162,7 @@ export default function AdminInvoices() {
   };
 
   const sendWhatsApp = (invoice: Invoice) => {
-    const text = encodeURIComponent(`Singh Automobiles Invoice ${invoice.invoiceNumber}\nAmount: ${formatCurrency(invoice.totals.roundedTotal)}\nVerify/download: ${verificationUrl(invoice.verificationToken)}`);
+    const text = encodeURIComponent(`Singh Automobiles Invoice ${invoice.invoiceNumber}\nAmount: ${formatCurrency(invoice.totals.roundedTotal)}\nDownload: ${window.location.origin}/admin/invoices`);
     window.open(`https://wa.me/91${invoice.customer.phone.replace(/\D/g, "")}?text=${text}`, "_blank");
   };
 
@@ -296,7 +298,7 @@ export default function AdminInvoices() {
                       </Button>
                       <Button size="icon" variant="ghost" onClick={() => sendWhatsApp(invoice)}><Send className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" onClick={() => downloadPdf(invoice)} title="Download PDF"><Download className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" onClick={() => window.open(verificationUrl(invoice.verificationToken), "_blank")} title="Open verify page"><ExternalLink className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" onClick={() => window.open(`${window.location.origin}/admin/invoices`, "_blank")} title="Open billing page"><ExternalLink className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" className="text-destructive" onClick={async () => { await actions.remove(invoice.id); toast.success("Invoice deleted"); }}><Trash2 className="h-4 w-4" /></Button>
                     </td>
                   </tr>
@@ -308,13 +310,15 @@ export default function AdminInvoices() {
 
         {selected ? (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-background/90 p-4 print:static print:bg-white print:p-0">
-            <div className="mx-auto max-w-5xl print:max-w-none">
+            <div className="mx-auto flex max-w-5xl flex-col print:max-w-none">
               <div className="mb-4 flex justify-end gap-2 print:hidden">
                 <Button onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" />Print</Button>
                 <Button variant="outline" onClick={() => downloadPdf(selected)}><Download className="mr-2 h-4 w-4" />Download PDF</Button>
                 <Button variant="outline" onClick={() => setSelected(null)}>Close</Button>
               </div>
-              <InvoiceDocument invoice={selected} />
+              <div className="invoice-print-shell rounded-sm border border-border bg-white p-4 shadow-sm">
+                <InvoiceDocument invoice={selected} />
+              </div>
             </div>
           </div>
         ) : null}

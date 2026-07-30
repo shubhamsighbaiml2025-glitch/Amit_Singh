@@ -17,6 +17,7 @@ import {
 } from "../api/_templates.js";
 import { sendInvoiceEmailHandler } from "../api/send-invoice.js";
 import { generateInvoicePdfResponse } from "../api/invoice-pdf.js";
+import { getInvoiceByTokenHandler } from "../api/invoice.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
@@ -207,6 +208,7 @@ app.post("/api/admin-send-mail", async (req, res) => {
 
 app.post("/api/send-invoice", (req, res) => sendInvoiceEmailHandler(req, res));
 
+app.get("/api/invoice", (req, res) => getInvoiceByTokenHandler(req, res));
 app.get("/api/invoice-pdf", (req, res) => generateInvoicePdfResponse(req, res));
 
 app.listen(port, () => {
