@@ -218,7 +218,7 @@ export default function AdminInvoices() {
                       <Input type="number" min="1" value={item.quantity} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, quantity: Number(e.target.value) } : s))} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Unit Price (INR)</label>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Unit Price (Rupees)</label>
                       <Input type="number" min="0" value={item.unitPrice} onChange={(e) => updateServices(draft.services.map((s, i) => i === index ? { ...s, unitPrice: Number(e.target.value) } : s))} />
                     </div>
                     <div className="space-y-1.5">

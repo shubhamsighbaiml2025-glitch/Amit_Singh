@@ -72,7 +72,7 @@ export interface Invoice {
 
 export const DEFAULT_COMPANY: InvoiceCompany = {
   logoUrl: "/sa-logo.svg",
-  name: "Singh Automobiles Engine Engineering",
+  name: "Singh Automobiles",
   address: "India",
   phone: "+91 89876 89694",
   email: "singhautomobiles.in@gmail.com",
@@ -90,11 +90,10 @@ export function createVerificationToken() {
 }
 
 export function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
+  const amount = new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 2,
   }).format(Number.isFinite(value) ? value : 0);
+  return `Rs. ${amount}`;
 }
 
 export function formatDate(value?: string | Date | Timestamp) {
@@ -160,7 +159,7 @@ function numberToIndianWords(amount: number) {
 
 export function buildBusinessTerms() {
   return [
-    "Service charges cover diagnostics, repair labour, calibration, and machinery support performed by Singh Automobiles Engine Engineering.",
+    "Service charges cover diagnostics, repair labour, calibration, and machinery support performed by Singh Automobiles.",
     "Parts, consumables, travel, and on-site assistance are billed as listed in the invoice or as approved during the service workflow.",
     "Payment is due by the invoice due date. Work marked Pending, Partial, or Overdue remains payable until the account is settled.",
     "Warranty support applies to workmanship for the serviced system only and excludes unrelated faults, misuse, contaminated fuel/oil, electrical shorting, overheating, or third-party repairs.",

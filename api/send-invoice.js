@@ -5,11 +5,10 @@ import { generateInvoicePdf } from "./_invoice-pdf.js";
 import { appOrigin, buildVerifyUrl } from "./_invoice-shared.js";
 
 function formatCurrency(value = 0) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
+  const amount = new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 2,
   }).format(Number(value || 0));
+  return `Rs. ${amount}`;
 }
 
 export async function sendInvoiceEmailHandler(req, res) {

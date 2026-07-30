@@ -44,7 +44,7 @@ export default function AdminLogin() {
             <Wrench size={32} className="stroke-[2.5]" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">Admin Portal</h1>
-          <p className="text-muted-foreground text-sm mt-1">Singh Automobiles Engine Engineering</p>
+          <p className="text-muted-foreground text-sm mt-1">Singh Automobiles</p>
         </div>
 
         <form onSubmit={handleLogin} className="bg-card border border-border p-8 rounded-sm shadow-xl space-y-6">

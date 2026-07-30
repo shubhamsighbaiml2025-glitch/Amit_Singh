@@ -78,7 +78,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground font-mono">
-          <p>© {new Date().getFullYear()} Singh Automobiles Engine Engineering. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Singh Automobiles. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <a href="https://asrvtech.in" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">
               build by asrvtech.in

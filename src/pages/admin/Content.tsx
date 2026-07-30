@@ -247,7 +247,7 @@ export default function AdminContent() {
                   value={formData.phone}
                   onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   className="bg-background"
-                  placeholder="+91 +91 8987689694"
+                  placeholder="+91 89876 89694"
                 />
               </div>
               <div className="space-y-2">

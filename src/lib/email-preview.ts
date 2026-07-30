@@ -69,7 +69,7 @@ export function buildAdminMailPreviewHtml({
               ${attachmentBannerHtml}
               <div style="margin-top: 28px; padding-top: 18px; border-top: 1px solid #1E293B;">
                 <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #FFFFFF;">Warm Regards,</p>
-                <p style="margin: 0; font-size: 14px; font-weight: 600; color: #F59E0B;">Singh Automobiles Engine Engineering</p>
+                <p style="margin: 0; font-size: 14px; font-weight: 600; color: #F59E0B;">Singh Automobiles</p>
               </div>
             </td>
           </tr>

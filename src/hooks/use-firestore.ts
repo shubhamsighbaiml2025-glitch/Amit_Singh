@@ -68,7 +68,7 @@ export const DEFAULT_CONTENT: SiteContent = {
   phone: "+91 89876 89694",
   email: "singhautomobiles.in@gmail.com",
   location: "India",
-  aboutText: "With over a decade of hands-on experience in the heavy machinery sector, Amit Singh has built a reputation for uncompromising quality and technical excellence. Specializing in Volvo, CAT, Komatsu, and JCB equipment, Singh Automobiles Engine Engineering brings industrial-grade precision to every repair. We understand that downtime costs money, which is why we deliver fast, reliable, and durable solutions for alternators, wiring harnesses, hydraulic pumps, and diesel engines.",
+  aboutText: "With over a decade of hands-on experience in the heavy machinery sector, Amit Singh has built a reputation for uncompromising quality and technical excellence. Specializing in Volvo, CAT, Komatsu, and JCB equipment, Singh Automobiles brings industrial-grade precision to every repair. We understand that downtime costs money, which is why we deliver fast, reliable, and durable solutions for alternators, wiring harnesses, hydraulic pumps, and diesel engines.",
   servicesList: [
     { title: "Heavy Machinery Electrical Systems", description: "Complete diagnostics and repair for Alternators, Self Starters, Wiring Harnesses, Controllers, Displays, ECUs, and VCUs." },
     { title: "Diesel Engine Servicing", description: "Comprehensive diesel engine overhauls, maintenance, and repair for all major brands of heavy earth-moving machinery." },

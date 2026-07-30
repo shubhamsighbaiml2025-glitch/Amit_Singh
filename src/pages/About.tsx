@@ -24,7 +24,7 @@ export default function About() {
         <div className="container mx-auto px-4 md:px-6">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-4 md:mb-6">About Amit Singh.</h1>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-            The technical expertise behind Singh Automobiles Engine Engineering.
+            The technical expertise behind Singh Automobiles.
           </p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export default function About() {
                 <div className="w-full h-px bg-border" />
                 <div>
                   <div className="text-sm font-mono text-muted-foreground uppercase tracking-widest mb-1">Company</div>
-                  <div className="text-base md:text-lg font-medium leading-snug">Singh Automobiles Engine Engineering</div>
+                  <div className="text-base md:text-lg font-medium leading-snug">Singh Automobiles</div>
                 </div>
               </div>
             </div>

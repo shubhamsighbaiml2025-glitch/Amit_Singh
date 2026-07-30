@@ -45,7 +45,7 @@ export async function sendEnquiryEmails(params: {
     to_email: params.fromEmail,
     to_name: params.fromName,
     reply_message:
-      "Thank you for reaching out to Singh Automobiles Engine Engineering. We will be connecting with you as soon as possible.",
+      "Thank you for reaching out to Singh Automobiles. We will be connecting with you as soon as possible.",
   };
 
   // Send both concurrently

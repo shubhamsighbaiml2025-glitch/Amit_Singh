@@ -173,7 +173,7 @@ function buildPreviewHtml(themeId: string, subject: string, message: string, att
           ${attachBanner}
           <div style="margin-top:32px;padding-top:20px;border-top:1px solid ${theme.border};">
             <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#FFFFFF;">Warm Regards,</p>
-            <p style="margin:0;font-size:14px;font-weight:700;color:${theme.accent};">Singh Automobiles Engine Engineering</p>
+            <p style="margin:0;font-size:14px;font-weight:700;color:${theme.accent};">Singh Automobiles</p>
           </div>
         </td></tr>
 

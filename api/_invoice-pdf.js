@@ -13,11 +13,10 @@ const signatureCandidates = [
 ];
 
 function formatCurrency(value = 0) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
+  const amount = new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 2,
   }).format(Number(value || 0));
+  return `Rs. ${amount}`;
 }
 
 function formatDisplayDate(value) {
