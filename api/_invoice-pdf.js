@@ -169,9 +169,7 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
     columns.forEach((col) => doc.text(col.label, col.x, tableTop + 8, { width: col.w }));
 
     const defaultRowHeight = 22;
-    // Reserve enough bottom space for the footer while allowing the
-    // service table to use more of the page when the invoice is short.
-    const minPageBottom = pageHeight - 200;
+    const pageBottom = pageHeight - 42;
     let rowY = tableTop + 32;
 
     const drawServiceTableHeader = () => {
@@ -190,7 +188,7 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       const amountHeight = doc.heightOfString(formatCurrency(item.total), { width: columns[5].w, align: "right" });
       const rowHeight = Math.max(defaultRowHeight, nameHeight, descHeight, qtyHeight, rateHeight, amountHeight) + 8;
 
-      if (rowY + rowHeight > minPageBottom) {
+      if (rowY + rowHeight > pageBottom) {
         doc.addPage();
         drawServiceTableHeader();
       }
@@ -206,7 +204,7 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       rowY += rowHeight;
     });
 
-    let summaryTop = Math.max(rowY + 18, 420);
+    let summaryTop = rowY + 12;
     doc.font("Helvetica").fontSize(8);
     const totalTermsTextHeight = invoice.terms.reduce((sum, term, index) => {
       const height = doc.heightOfString(`${index + 1}. ${String(term)}`, {
@@ -217,10 +215,9 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
     }, 0);
     const summaryHeight = 112;
     const termsBoxHeight = Math.max(totalTermsTextHeight + 32, 110);
-    const footerHeight = 120;
-    const minBottomSpace = 40;
-    const totalFooterBlockHeight = summaryHeight + 14 + termsBoxHeight + footerHeight + minBottomSpace;
-    if (summaryTop + totalFooterBlockHeight > pageHeight - 36) {
+    const footerGap = 10;
+    const totalFooterBlockHeight = summaryHeight + 12 + termsBoxHeight + footerGap + 92 + 28;
+    if (summaryTop + totalFooterBlockHeight > pageBottom) {
       doc.addPage();
       summaryTop = 56;
     }
@@ -247,8 +244,7 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
     doc.font("Helvetica").fontSize(8).fillColor("#64748b")
       .text(`Amount in words: ${invoice.totals.amountInWords || ""}`, summaryX, summaryTop + 102, { width: 200, align: "right" });
 
-    const termsTop = summaryTop + summaryHeight + 14;
-    const termsBoxHeight = Math.max(totalTermsTextHeight + 32, 110);
+    const termsTop = summaryTop + summaryHeight + 12;
     doc.roundedRect(left, termsTop, contentWidth - 220, termsBoxHeight, 6).fillAndStroke("#f8fafc", "#e2e8f0");
     doc.font("Helvetica-Bold").fontSize(10).fillColor("#0f172a")
       .text("Terms & Conditions", left + 12, termsTop + 12, { width: contentWidth - 240 });
@@ -260,13 +256,12 @@ export async function generateInvoicePdf(invoiceInput, verifyUrl) {
       termY = doc.y + 6;
     });
 
-    const footerHeight = 120;
-    const footerY = doc.page.height - footerHeight;
-    if (termY + 28 > footerY) {
+    let actualFooterY = Math.max(termY + footerGap, termsTop + termsBoxHeight + footerGap);
+    if (actualFooterY + 110 > pageBottom) {
       doc.addPage();
+      actualFooterY = 56;
     }
 
-    const actualFooterY = doc.page.height - footerHeight;
     doc.roundedRect(left, actualFooterY, 250, 92, 6).fillAndStroke("#f8fafc", "#e2e8f0");
     doc.image(qrBuffer, 44, actualFooterY + 8, { width: 72, height: 72 });
     doc.font("Helvetica-Bold").fontSize(9).fillColor("#0f172a")
