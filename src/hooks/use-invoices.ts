@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/firebase";
-import type { Invoice } from "@/lib/invoice-utils";
+import { normalizeInvoiceBranding, type Invoice } from "@/lib/invoice-utils";
 import {
   addDoc,
   collection,
@@ -27,7 +27,7 @@ export function useInvoices() {
     try {
       const q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"));
       const snap = await getDocs(q);
-      setInvoices(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Invoice[]);
+      setInvoices(snap.docs.map((d) => normalizeInvoiceBranding({ id: d.id, ...d.data() } as Invoice)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load invoices");
       setInvoices([]);
@@ -54,12 +54,13 @@ export function useInvoiceByToken(token?: string) {
       return;
     }
 
+    const safeToken = token;
     let alive = true;
     async function run() {
       setLoading(true);
       setError("");
       try {
-        const response = await fetch(`/api/invoice?token=${encodeURIComponent(token)}`);
+        const response = await fetch(`/api/invoice?token=${encodeURIComponent(safeToken)}`);
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
@@ -67,7 +68,7 @@ export function useInvoiceByToken(token?: string) {
         }
 
         if (alive) {
-          setInvoice(payload?.invoice as Invoice | null);
+          setInvoice(payload?.invoice ? normalizeInvoiceBranding(payload.invoice as Invoice) : null);
         }
       } catch (err) {
         if (alive) setError(err instanceof Error ? err.message : "Unable to verify invoice");

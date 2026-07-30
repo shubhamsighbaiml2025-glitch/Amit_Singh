@@ -81,6 +81,25 @@ export const DEFAULT_COMPANY: InvoiceCompany = {
   signatureUrl: "/assets/authorized-signature.png",
 };
 
+export function normalizeInvoiceBranding(invoice: Invoice): Invoice {
+  return {
+    ...invoice,
+    company: {
+      ...DEFAULT_COMPANY,
+      ...(invoice.company || {}),
+      name: DEFAULT_COMPANY.name,
+      phone: DEFAULT_COMPANY.phone,
+      email: DEFAULT_COMPANY.email,
+    },
+  };
+}
+
+export function verificationUrl(token: string) {
+  const origin = typeof window === "undefined" ? DEFAULT_COMPANY.website : window.location.origin;
+  const query = new URLSearchParams({ token });
+  return `${origin}/verify?${query.toString()}`;
+}
+
 export const INVOICE_STATUSES: InvoiceStatus[] = ["Pending", "Paid", "Partial", "Overdue", "Cancelled"];
 
 export function createVerificationToken() {

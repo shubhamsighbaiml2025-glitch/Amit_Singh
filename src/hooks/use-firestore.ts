@@ -77,6 +77,19 @@ export const DEFAULT_CONTENT: SiteContent = {
   ]
 };
 
+function normalizeSiteContent(content: Partial<SiteContent>): SiteContent {
+  const merged = { ...DEFAULT_CONTENT, ...content };
+  return {
+    ...merged,
+    phone: DEFAULT_CONTENT.phone,
+    email: DEFAULT_CONTENT.email,
+    aboutText: String(merged.aboutText || DEFAULT_CONTENT.aboutText).replaceAll(
+      "Singh Automobiles Engine Engineering",
+      "Singh Automobiles",
+    ),
+  };
+}
+
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -97,7 +110,7 @@ export function useSiteContent() {
       const docSnap = await withTimeout(getDoc(doc(db, 'content', 'site')), 2500);
 
       if (docSnap?.exists()) {
-        setData({ ...DEFAULT_CONTENT, ...(docSnap.data() as Partial<SiteContent>) });
+        setData(normalizeSiteContent(docSnap.data() as Partial<SiteContent>));
       }
     } catch {
       // Firebase not configured yet - keep default content.

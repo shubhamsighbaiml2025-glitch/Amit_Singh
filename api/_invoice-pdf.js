@@ -37,12 +37,12 @@ function normalizeInvoice(invoice = {}) {
   return {
     ...invoice,
     company: {
-      name: "Singh Automobiles",
       address: "India",
-      phone: "+91 89876 89694",
-      email: "singhautomobiles.in@gmail.com",
       gstNumber: "",
       ...(invoice.company || {}),
+      name: "Singh Automobiles",
+      phone: "+91 89876 89694",
+      email: "singhautomobiles.in@gmail.com",
     },
     customer: invoice.customer || {},
     services: Array.isArray(invoice.services) ? invoice.services : [],

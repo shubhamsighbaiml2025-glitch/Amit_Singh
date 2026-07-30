@@ -2,7 +2,13 @@ import type { Invoice } from "@/lib/invoice-utils";
 import { formatCurrency, formatDate, statusStyles } from "@/lib/invoice-utils";
 
 export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
-  const signatureSrc = invoice.company?.signatureUrl || "/assets/authorized-signature.png";
+  const company = {
+    ...(invoice.company || {}),
+    name: "Singh Automobiles",
+    phone: "+91 89876 89694",
+    email: "singhautomobiles.in@gmail.com",
+  };
+  const signatureSrc = company.signatureUrl || "/assets/authorized-signature.png";
   const showSignature = Boolean(signatureSrc && signatureSrc.trim());
 
   return (
@@ -15,18 +21,18 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
         <header className="flex flex-col gap-6 border-b border-slate-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex gap-4">
             <img
-              src={invoice.company.logoUrl || "/sa-logo.svg"}
-              alt={invoice.company.name}
+              src={company.logoUrl || "/sa-logo.svg"}
+              alt={company.name}
               className="h-16 w-16 shrink-0 object-contain"
             />
             <div>
-              <h2 className="text-xl font-bold tracking-tight sm:text-2xl">{invoice.company.name}</h2>
-              <p className="mt-1 max-w-md text-sm leading-relaxed text-slate-600">{invoice.company.address}</p>
+              <h2 className="text-xl font-bold tracking-tight sm:text-2xl">{company.name}</h2>
+              <p className="mt-1 max-w-md text-sm leading-relaxed text-slate-600">{company.address}</p>
               <p className="mt-1 text-sm text-slate-600">
-                {invoice.company.phone} · {invoice.company.email}
+                {company.phone} · {company.email}
               </p>
-              {invoice.company.gstNumber ? (
-                <p className="text-sm text-slate-600">GSTIN: {invoice.company.gstNumber}</p>
+              {company.gstNumber ? (
+                <p className="text-sm text-slate-600">GSTIN: {company.gstNumber}</p>
               ) : null}
             </div>
           </div>
@@ -168,7 +174,7 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
               </div>
             )}
             <div className="mt-2 border-t border-slate-400 pt-2 text-sm font-bold">Authorized Signature</div>
-            <p className="mt-1 text-xs text-slate-500">{invoice.company.name}</p>
+            <p className="mt-1 text-xs text-slate-500">{company.name}</p>
           </div>
         </footer>
 
