@@ -77,7 +77,7 @@ export const DEFAULT_COMPANY: InvoiceCompany = {
   phone: "+91 89876 89694",
   email: "singhautomobiles.in@gmail.com",
   gstNumber: "",
-  website: typeof window === "undefined" ? "https://amit-singh-sepia.vercel.app" : window.location.origin,
+  website: typeof window === "undefined" ? "https://singhautomobiles.in" : window.location.origin,
   signatureUrl: "/assets/authorized-signature.png",
 };
 
@@ -87,6 +87,8 @@ export function normalizeInvoiceBranding(invoice: Invoice): Invoice {
     company: {
       ...DEFAULT_COMPANY,
       ...(invoice.company || {}),
+      phone: DEFAULT_COMPANY.phone,
+      email: DEFAULT_COMPANY.email,
     },
   };
 }

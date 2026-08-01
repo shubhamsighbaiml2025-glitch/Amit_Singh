@@ -5,6 +5,8 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
   const company = {
     ...DEFAULT_COMPANY,
     ...(invoice.company || {}),
+    phone: DEFAULT_COMPANY.phone,
+    email: DEFAULT_COMPANY.email,
   };
   const signatureSrc = company.signatureUrl || "/assets/authorized-signature.png";
   const showSignature = Boolean(signatureSrc && signatureSrc.trim());
