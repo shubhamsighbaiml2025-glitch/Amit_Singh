@@ -257,7 +257,7 @@ export default function AdminContent() {
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
                   className="bg-background"
-                  placeholder="name@example.com"
+                  placeholder="singhautomobiles.in@gmail.com"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">

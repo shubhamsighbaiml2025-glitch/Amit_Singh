@@ -154,7 +154,7 @@ export default function Reviews() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="singhautomobiles.in@gmail.com"
                 required
                 className="bg-background h-12"
               />

@@ -80,7 +80,7 @@ export default function Contact() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-medium">Email *</label>
-                  <Input id="email" name="email" type="email" required className="bg-background h-12" placeholder="john@company.com" />
+                  <Input id="email" name="email" type="email" required className="bg-background h-12" placeholder="singhautomobiles.in@gmail.com" />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="phone" className="text-sm font-medium">Phone *</label>
@@ -93,7 +93,7 @@ export default function Contact() {
                     maxLength={10}
                     required
                     className="bg-background h-12"
-                    placeholder="10 digit phone number"
+                    placeholder="8987689694"
                   />
                 </div>
               </div>
